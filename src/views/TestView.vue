@@ -1,12 +1,33 @@
 <script setup>
-	import { ref, reactive, computed, watch, triggerRef, shallowRef} from 'vue'
+	import { ref, reactive, computed, watch, triggerRef, shallowRef, defineProps, onMounted} from 'vue'
 
+	const test = ref('800px')
 	const container = shallowRef(null)
-	const initial_pos = ref(null)
-	const last_pos = ref(null)
+	const cursor_position = ref(null)
 	const drag_started = ref(false)
 	const drag_finished = ref(false)
 	const container_box = computed(() => container.value.getBoundingClientRect())
+
+	const props = defineProps({
+		container_width: { type: String, default: '500px'},
+		container_height: { type: String, default: ''},
+		container_aspect_ratio: { type: [String,Number], default: '1'},
+		draggable_width: { type: String, default: '200px'},
+		draggable_height: { type: String, default: ''},
+		draggable_aspect_ratio: { type: [String,Number], default: '2'}
+	})
+
+	const container_style = ref({
+		width: props.container_width,
+		height: props.container_height,
+		aspectRatio: props.container_aspect_ratio
+	})
+
+	const draggable_style = ref({
+		width: props.draggable_width,
+		height: props.draggable_height,
+		aspectRatio: props.draggable_aspect_ratio
+	})
 
 	function update_draggable_position(event){
 		calculate_x_position(event)
@@ -28,11 +49,11 @@
 
 		if(cursor_is_not_at_screen_origin(event)){
 			if(!drag_is_happening()){
-				page_x = last_pos.value.x
+				page_x = cursor_position.value.x
 			}
 
 			if(draggable_should_move_x(event)){
-				draggable.style.left = (left+page_x-last_pos.value.x).toString()+'px'
+				draggable.style.left = (left+page_x-cursor_position.value.x).toString()+'px'
 			}
 
 			draggable_box = draggable.getBoundingClientRect()
@@ -47,7 +68,7 @@
 				draggable.style.left = (container_box.value.width - draggable_box.width).toString()+'px'
 			}
 
-			last_pos.value.x = page_x
+			cursor_position.value.x = page_x
 		}
 	}
 
@@ -59,11 +80,11 @@
 
 		if(cursor_is_not_at_screen_origin(event)){
 			if(!drag_is_happening()){
-				page_y = last_pos.value.y
+				page_y = cursor_position.value.y
 			}
 
 			if(draggable_should_move_y(event)){
-				draggable.style.top = (top+page_y-last_pos.value.y).toString()+'px'
+				draggable.style.top = (top+page_y-cursor_position.value.y).toString()+'px'
 			}
 
 			draggable_box = draggable.getBoundingClientRect()
@@ -78,7 +99,7 @@
 				draggable.style.top = (container_box.value.height - draggable_box.height).toString()+'px'
 			}
 
-			last_pos.value.y = page_y
+			cursor_position.value.y = page_y
 		}
 	}
 
@@ -147,12 +168,12 @@
 	}
 
 	function cursor_off_limits_left(event){
-		let page_x = drag_is_happening() ? event.pageX : last_pos.value.x
+		let page_x = drag_is_happening() ? event.pageX : cursor_position.value.x
 		return page_x < container_box.value.left
 	}
 
 	function cursor_off_limits_right(event){
-		let page_x = drag_is_happening() ? event.pageX : last_pos.value.x
+		let page_x = drag_is_happening() ? event.pageX : cursor_position.value.x
 		return page_x > container_box.value.right
 	}
 
@@ -165,8 +186,8 @@
 	}
 
 	function draggable_should_not_move_x(event){
-		let page_x = drag_is_happening() ? event.pageX : last_pos.value.x
-		let displacement = page_x-last_pos.value.x
+		let page_x = drag_is_happening() ? event.pageX : cursor_position.value.x
+		let displacement = page_x-cursor_position.value.x
 		let should_not_move_to_right = null
 		let should_not_move_to_left = null
 		
@@ -177,8 +198,8 @@
 	}
 
 	function draggable_should_not_move_y(event){
-		let page_y = drag_is_happening() ? event.pageY : last_pos.value.y
-		let displacement = page_y-last_pos.value.y
+		let page_y = drag_is_happening() ? event.pageY : cursor_position.value.y
+		let displacement = page_y-cursor_position.value.y
 		let should_not_move_to_top = null
 		let should_not_move_to_bottom = null
 		
@@ -193,12 +214,12 @@
 	}
 
 	function cursor_off_limits_top(event){
-		let page_y = drag_is_happening() ? event.pageY : last_pos.value.y
+		let page_y = drag_is_happening() ? event.pageY : cursor_position.value.y
 		return page_y < container_box.value.top
 	}
 
 	function cursor_off_limits_bottom(event){
-		let page_y = drag_is_happening() ? event.pageY : last_pos.value.y
+		let page_y = drag_is_happening() ? event.pageY : cursor_position.value.y
 		return page_y > container_box.value.bottom
 	}
 
@@ -210,8 +231,7 @@
 	}
 
 	function reset_positions(){
-		last_pos.value = null
-		initial_pos.value = null
+		cursor_position.value = null
 	}
 
 	function setup_drag(event){
@@ -229,16 +249,14 @@
 		drag_finished.value = false
 	}
 
-	function set_initial_pos(event){
-		let draggable_box = event.target.getBoundingClientRect()
-		initial_pos.value = {x: draggable_box.x,y: draggable_box.y}
-		last_pos.value = {x: event.pageX,y: event.pageY}
+	function set_cursor_position(event){
+		cursor_position.value = {x: event.pageX,y: event.pageY}
 	}
 </script>
 
 <template>
-	<main ref="container" id="container">
-		<div @mousedown="set_initial_pos" @dragstart="setup_drag" @dragend="finish_drag" @drag="update_draggable_position" id="crop-window" draggable="true"></div>
+	<main :style="container_style"  ref="container" id="container">
+		<div :style="draggable_style" @mousedown="set_cursor_position" @dragstart="setup_drag" @dragend="finish_drag" @drag="update_draggable_position" id="crop-window" draggable="true"></div>
 		<div id="opacity-top"></div>
 		<div id="opacity-bottom"></div>
 		<div id="opacity-left"></div>
@@ -268,8 +286,8 @@
 		justify-content: start;
 		position: relative;
 		background-color: #cccccc;
-		width: 500px;
-		height: 500px;
+		//width: 500px;
+		//height: 500px;
 
 		#crop-window{
 			z-index: 3;
@@ -283,8 +301,8 @@
 			cursor: grab;
 			position: absolute;
 			background-color: transparent;
-			width: 200px;
-			aspect-ratio: 2;
+			//width: 200px;
+			//aspect-ratio: 2;
 			border: 5px solid white;
 			box-sizing: border-box;
 		}
