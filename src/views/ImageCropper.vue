@@ -1,7 +1,6 @@
 <script setup>
-	import { ref, reactive, computed, watch, triggerRef, shallowRef, defineProps, onMounted} from 'vue'
+	import { ref, computed, triggerRef, shallowRef, defineProps} from 'vue'
 
-	const test = ref('800px')
 	const container = shallowRef(null)
 	const cursor_position = ref(null)
 	const drag_started = ref(false)
@@ -286,8 +285,6 @@
 		justify-content: start;
 		position: relative;
 		background-color: #cccccc;
-		//width: 500px;
-		//height: 500px;
 
 		#crop-window{
 			z-index: 3;
@@ -301,8 +298,6 @@
 			cursor: grab;
 			position: absolute;
 			background-color: transparent;
-			//width: 200px;
-			//aspect-ratio: 2;
 			border: 5px solid white;
 			box-sizing: border-box;
 		}
