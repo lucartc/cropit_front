@@ -1,14 +1,25 @@
 <script setup>
 	import NavView from './NavView.vue'
+	import ImageCropper from './ImageCropper.vue'
 	import { ref, reactive, computed, watch, onUpdated } from 'vue'
 
 	const current_image_index = ref(-1)
 	const width = ref(1)
 	const height = ref(1)
-	const example_json = ref('# For aspect ratio 1:1 => {"ratios": [{"width": 1,"height": 1}]}')
+	const example_json = ref('# Example: {"ratios": [{"width": 1,"height": 1}]}')
 	const image_object_src = ref(null)
 	const json_string = ref('')
 	const json_error_message = ref('JSON is not valid!')
+
+	const image_cropper_props = reactive({
+		container_width: '',
+		container_height: '100%',
+		container_aspect_ratio: '2',
+		draggable_width: '20%',
+		draggable_height: '',
+		draggable_aspect_ratio: '1',
+		container_background_image: null
+	})
 
 	const aspect_ratios = computed(() => {
 		try{
@@ -19,151 +30,183 @@
 	})
 
 	const json_error = computed(() => {
-		if(!is_aspect_ratios_valid() && json_string.value.length > 0){
+		if(!aspect_ratios_valid() && json_string_not_empty()){
 			return true
-		}
-		else if(!is_aspect_ratios_valid() && json_string.value.length == 0){
-			return false 
+		}else if(!aspect_ratios_valid() && json_string_empty()){
+			return false
 		}else{
-			return !validate_json()
+			return !valid_json()
 		}
 	})
 
 	const textarea_class = computed(() => {
-		return json_error.value ? "textarea_error" : "textarea_default"
+		return json_invalid() ? "textarea_error" : "textarea_default"
 	})
 
 	watch(aspect_ratios,(current,previous) => {
-		console.log('changed...')
-		if(is_aspect_ratios_valid() && aspect_ratios.value.length > 0){
-			current_image_index.value = aspect_ratios.value.length-1
+		if(aspect_ratios_not_empty()){
+			current_image_index.value = 0
 		}
 		update_active_aspect_ratio()
-		update_current_image_aspect_ratio()
 	})
 
 	watch(current_image_index,(current,previous)=> {
-		console.log('current: ',current)
-		let current_image = document.getElementById('current-image')
 		update_active_aspect_ratio()
-		update_current_image_aspect_ratio()
 	})
 
+	function json_invalid(){
+		return json_error.value
+	}
+
+	function json_string_empty(){
+		return json_string.value.length == 0
+	}
+
+	function json_string_not_empty(){
+		return !json_string_empty()
+	}
+
+	function aspect_ratios_empty(){
+		return aspect_ratios_valid() && aspect_ratios.value.length == 0
+	}
+
+	function aspect_ratios_not_empty(){
+		return aspect_ratios_valid() && aspect_ratios.value.length > 0
+	}
+
 	function update_active_aspect_ratio(){
-		let aspect_ratio_items = Array.from(document.getElementsByClassName('aspect-ratio-item'))
-		let aspect_ratio_items_active = Array.from(document.getElementsByClassName('aspect-ratio-item-active'))
-		let all_aspect_ratio_item_elements = aspect_ratio_items.concat(aspect_ratio_items_active)
+		let aspect_ratio_items = null
+		let active_aspect_ratio = null
+		let all_aspect_ratios = null
 
-		if(all_aspect_ratio_item_elements.length > 0){
-			all_aspect_ratio_item_elements.forEach((item) => {
-				if(parseInt(item.id) == parseInt(current_image_index.value)){
-					item.className = 'aspect-ratio-item-active'
-				}else{
-					item.className = 'aspect-ratio-item'
-				}
-			})
+		aspect_ratio_items = document.querySelectorAll('.aspect-ratio-item')
+		active_aspect_ratio = document.querySelectorAll('.aspect-ratio-item-active')
+		aspect_ratio_items = Array.from(aspect_ratio_items)
+		active_aspect_ratio = Array.from(active_aspect_ratio)
+		all_aspect_ratios = aspect_ratio_items.concat(active_aspect_ratio)
+
+		if(all_aspect_ratios.length > 0){
+			set_active_aspect_ratio_item(all_aspect_ratios)
+			update_crop_window_aspect_ratio()
 		}
 	}
 
-	function is_aspect_ratios_valid(){
-		return aspect_ratios.value != null && aspect_ratios.value != undefined
+	function set_active_aspect_ratio_item(aspect_ratio_items){
+		aspect_ratio_items.forEach((item) => {
+			let item_id = parseInt(item.id)
+			let current_image_id = current_image_index.value
+			let is_active = (item_id == current_image_id)
+			let active_class = 'aspect-ratio-item-active'
+			let not_active_class = 'aspect-ratio-item'
+			item.className = (is_active ? active_class : not_active_class)
+		})
 	}
 
-	function validate_json(){
-		if(is_aspect_ratios_valid()){
-			if(aspect_ratios.value.length == 0){
-				return false
-			}else{
-				let valid_items = aspect_ratios.value.filter(item => item.hasOwnProperty('width') && item.hasOwnProperty('height'))
-				if(valid_items.length != aspect_ratios.value.length || aspect_ratios.value.length == 0){
-					return false
-				}else{
-					return true
-				}
-			}
-		}else{
-			return false
+	function update_crop_window_aspect_ratio(){
+		let aspect_ratio = document.querySelector('.aspect-ratio-item-active')
+		let aspect_ratio_value = aspect_ratio.innerText.split(':').join(' / ')
+		image_cropper_props.draggable_aspect_ratio = aspect_ratio_value
+	}
+
+	function aspect_ratios_valid(){
+		return aspect_ratios.value != null
+	}
+
+	function aspect_ratios_invalid(){
+		return !aspect_ratios_valid()
+	}
+
+	function valid_json(){
+		if(aspect_ratios_not_empty()){
+			let valid_items = valid_aspect_ratios()
+			return (valid_items.length != aspect_ratios.value.length ? false : true)
 		}
+		return false
+	}
+
+	function valid_aspect_ratios(){
+		return aspect_ratios.value.filter(item => validate_aspect_ratio(item))
+	}
+
+	function validate_aspect_ratio(item){
+		return item.hasOwnProperty('width') && item.hasOwnProperty('height')
 	}
 
 	function toggle_add_aspect_ratio(event){
-		let form = document.getElementById('add-aspect-ratio-group')
-
-		if(form.style.display == 'none' || form.style.display == ''){
-			form.style.display = 'flex'
-		}else{
-			form.style.display = 'none'
-		}
+		let form = document.querySelector('#add-aspect-ratio-group')
+		let style = form.style
+		style.display = (style.display == '' ? 'flex' : '')
 	}
 
 	function toggle_json_textarea(event){
-		let textarea = document.getElementById('json-container')
-		let json_error_label = document.getElementById('json-error')
+		let textarea = document.querySelector('#json-container')
+		let json_error_label = document.querySelector('#json-error')
+		let style = textarea.style
 
-		if(textarea.style.display == 'none' || textarea.style.display == '' ){
-			textarea.style.display = 'initial'
-		}else{
-			textarea.style.display = 'none'
-		}
-		
-		if(json_error_label != undefined && json_error_label != null){
-			json_error_label.style.display = textarea.style.display
+		style.display = (style.display == '' ? 'initial' : '')
+
+		if(json_error_label != null){
+			json_error_label.style.display = style.display
 		}
 	}
 
 	function toggle_help(event){
-		let help = document.getElementById('left')
-		let middle = document.getElementById('middle')
-		let right = document.getElementById('right')
+		let help = document.querySelector('#left')
+		let middle = document.querySelector('#middle')
+		let right = document.querySelector('#right')
 
-		if(help.style.display == 'none' || help.style.display == ''){
+		if(help.style.display == ''){
 			help.style.display = 'flex'
 			middle.className = 'middle-small'
 			right.className = 'right-small'
 		}else{
-			help.style.display = 'none'
+			help.style.display = ''
 			middle.className = 'middle-big'
 			right.className = 'right-big'
 		}
 	}
 
 	function import_image(event){
-		let image_picker = document.getElementById('import-image-input')
+		let image_picker = document.querySelector('#import-image-input')
 		image_picker.click()
 	}
 
 	function set_image_object(event){
 		let image = Array.from(event.target.files).pop()
-		let current_image = document.getElementById('current-image')
+		let current_image_element = document.querySelector('#current-image')
+		let style = current_image_element.style
 
 		image_object_src.value = URL.createObjectURL(image)
-		console.log('setting image...')
-		current_image.style.backgroundImage = 'url('+ image_object_src.value +')'
-		current_image.style.backgroundSize = 'cover'
+		style.backgroundImage = 'url('+ image_object_src.value +')'
+		style.backgroundSize = 'cover'
+		image_cropper_props.container_background_image = style.backgroundImage
 	}
 
 	function add_aspect_ratio(event){
 		let ratios = {width: width.value, height: height.value}
 
-		if(aspect_ratios.value == null){
+		if(aspect_ratios_invalid()){
 			json_string.value = JSON.stringify({ratios: [ratios]})
 		}else{
-			if(aspect_ratios.value instanceof Array){
 				let json_obj = JSON.parse(json_string.value)
 				json_obj.ratios.push(ratios)
 				json_string.value = JSON.stringify(json_obj)
-			}
 		}
 
+		reset_width_and_height()
+	}
+
+	function reset_width_and_height(){
 		width.value = 1;
 		height.value = 1;
 	}
 
 	function update_current_image_aspect_ratio(){
-		let current_image = document.getElementById('current-image')
+		let current_image = document.querySelector('#current-image')
 		let aspect_ratio = null
+		let style = current_image.style
 
-		if(is_aspect_ratios_valid() && aspect_ratios.value.length > 0){
+		if(aspect_ratios_not_empty()){
 			aspect_ratio = aspect_ratios.value[current_image_index.value]
 		}
 
@@ -171,47 +214,48 @@
 			let width = parseFloat(aspect_ratio.width)
 			let height = parseFloat(aspect_ratio.height)
 
-			current_image.style.aspectRatio = aspect_ratio.width+'/'+aspect_ratio.height
+			style.aspectRatio = aspect_ratio.width+'/'+aspect_ratio.height
 
 			if(width > height){
-				current_image.style.width = '100%'
-				current_image.style.height = 'auto'
+				style.width = '100%'
+				style.height = 'auto'
 			}else{
-				current_image.style.width = 'auto'
-				current_image.style.height = '100%'
+				style.width = 'auto'
+				style.height = '100%'
 			}
 
 		}else{
-			current_image.style.aspectRatio = '2'
-			current_image.style.width = '100%'
-			current_image.style.height = 'auto'
+			style.aspectRatio = '2'
+			style.width = '100%'
+			style.height = 'auto'
 		}
 	}
 
 	function remove_aspect_ratio(event){
 		let id = event.target.parentElement.id
-		if(aspect_ratios != null){
-			let json_obj = JSON.parse(json_string.value).ratios
-			let old_json_obj = json_obj.slice()
-			json_obj.splice(parseInt(id),1)
-			let new_current_image_index = json_obj.indexOf(old_json_obj[current_image_index.value])
+		
+		if(aspect_ratios_valid()){
+			let json = JSON.parse(json_string.value).ratios
+			let old_json = json.slice()
+			json.splice(parseInt(id),1)
+			let new_image_index = json.indexOf(old_json[current_image_index.value])
 
-			if(json_obj.length > 0){
-				json_string.value = JSON.stringify({ratios: json_obj})
+			if(json.length > 0){
+				json_string.value = JSON.stringify({ratios: json})
 			}else{
 				json_string.value = ''
 			}
 
-			if(new_current_image_index < 0){
+			if(new_image_index < 0){
 				current_image_index.value = 0
 			}else{
-				current_image_index.value = new_current_image_index
+				current_image_index.value = new_image_index
 			}
 		}
 	}
 
 	function next_image(event){
-		if(is_aspect_ratios_valid()){
+		if(aspect_ratios_valid()){
 			if(current_image_index.value == aspect_ratios.value.length-1){
 				current_image_index.value = 0
 			}else{
@@ -221,7 +265,7 @@
 	}
 
 	function previous_image(event){
-		if(is_aspect_ratios_valid()){
+		if(aspect_ratios_valid()){
 			if(current_image_index.value == 0){
 				current_image_index.value = aspect_ratios.value.length-1
 			}else{
@@ -238,10 +282,7 @@
 	}
 
 	function clear_image(event){
-		let form = document.getElementById('import-image-input').parentElement
-		let current_image = document.getElementById('current-image')
-		form.reset()
-		current_image.style.backgroundImage = 'none'
+		image_cropper_props.container_background_image = null
 		image_object_src.value = null
 	}
 
@@ -260,19 +301,22 @@
 		</div>
 		<div id="middle" class="middle-big">
 			<div id="display">
-				<div id="current-image">
+				<div id="current-image" v-if="!image_object_src">
 					<form hidden>
 						<input @change="set_image_object" type="file" id="import-image-input" name="image" hidden>
 					</form>
-					<button v-if="!image_object_src" @click="import_image" id="import-image"><img id="import-image-icon" src="/import.svg"> Import image</button>
+					<button @click="import_image" id="import-image"><img id="import-image-icon" src="/import.svg"> Import image</button>
 				</div>
+				<ImageCropper v-if="image_object_src" v-bind="image_cropper_props" />
 			</div>
 			<div id="button-bar">
 				<button @click="previous_image" id="previous"><img id="previous-icon" src="/left.svg"></button>
 				<button @click="next_image" id="next"><img id="next-icon" src="/right.svg"></button>
 				<button id="download-images"><img id="download-icon" src="/download.svg"></button>
 				<button v-if="image_object_src" @click="clear_image" id="clear"><img id="clear-icon" src="/remove.svg"></button>
-				<button @click="toggle_help" id="help"><img id="help-icon" src="/help.svg"></button>
+				<button @click="toggle_help" id="help"><img id="help-icon" src="/help.svg">
+					<div class="tooltip">Toggle help</div>
+				</button>
 			</div>
 		</div>
 		<div id="right" class="right-big">
@@ -354,6 +398,7 @@
 					max-width: 100%;
 					height: 100%;
 					aspect-ratio: 2;
+					position: relative;
 
 					#import-image{
 						white-space: nowrap;
@@ -393,6 +438,7 @@
 				#previous, #next, #download-images, #help, #clear{
 					border-radius: 5px;
 					display: flex;
+					position: relative;
 					flex-direction: row;
 					align-items: center;
 					justify-content: center;
@@ -404,6 +450,30 @@
 					&:last-child{
 						margin: 0px 0px 0px auto;
 						border-radius: 50%;
+					}
+
+					.tooltip{
+						background-color: #cccccc;
+						border-radius: 5px;
+						top: -50px;
+						z-index: 2;
+						position: absolute;
+						display: flex;
+						flex-direction: column;
+						align-items: center;
+						justify-content: center;
+						opacity: 0;
+						transition: opacity 0.5s;
+						padding: 5px 10px 5px 10px;
+						font-size: 1.2em;
+						color: #333333;
+						text-align: center;
+					}
+
+					&:hover{
+						.tooltip{
+							opacity: 1;
+						}
 					}
 				}
 
@@ -602,13 +672,11 @@
 		}
 
 		.right-big{
-			min-width: 40%;
-			max-width: 40%;
+			max-width: fit-content;
 		}
 
 		.right-small{
-			min-width: 30%;
-			max-width: 30%;
+			max-width: fit-content;
 		}
 	}
 
