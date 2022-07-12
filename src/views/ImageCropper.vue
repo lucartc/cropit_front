@@ -1,7 +1,7 @@
 <script setup>
 	import {ref, computed, triggerRef, shallowRef, defineProps, onMounted, watch, reactive, nextTick, onUnmounted} from 'vue'
 	import { calculate_centered_image_position, calculate_covering_image_position } from '../helpers/calculations.js'
-	import { container, last_cursor_position, current_cursor_position, drag_started, drag_finished,calculate_x_position, calculate_y_position, calculate_opacity_position, start_drag, set_current_cursor_position, set_last_cursor_position, update_refs, crop_window_setup, crop_window_teardown} from '../helpers/crop_window.js'
+	import { container, finish_drag, start_drag, set_cursor_position ,crop_window_setup, crop_window_teardown, update_crop_position} from '../helpers/crop_window.js'
 
 	const draggable_aspect_ratio = ref(props.draggable_aspect_ratio)
 	const draggable_width = ref(props.draggable_width)
@@ -41,24 +41,6 @@
 
 	watch(draggable_style,() => nextTick(calculate_opacity_position))
 
-	function update_draggable_position(event){
-		set_current_cursor_position(event)
-		calculate_x_position()
-		calculate_y_position()
-		calculate_opacity_position()
-		update_refs()
-	}
-
-	function setup_drag(event){
-		hide_ghost(event)
-		start_drag()
-	}
-
-	function hide_ghost(event){
-		let container = document.createElement('div')
-		event.dataTransfer.setDragImage(container,0,0);
-	}
-
 	function set_image_aspect_ratio(){
 		let image = new Image()
 		image.src = container_background_image.value
@@ -79,7 +61,7 @@
 
 <template>
 	<main :style="container_style"  ref="container" id="image-cropper">
-		<div :style="draggable_style" @mousedown="set_last_cursor_position" @dragstart="setup_drag" @dragend="finish_drag" @drag="update_draggable_position" id="crop-window" draggable="true"></div>
+		<div :style="draggable_style" @mousedown="set_cursor_position" @dragstart="start_drag" @dragend="finish_drag" @drag="update_crop_position" id="crop-window" draggable="true"></div>
 		<div id="opacity-top"></div>
 		<div id="opacity-bottom"></div>
 		<div id="opacity-left"></div>
