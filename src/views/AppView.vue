@@ -18,7 +18,7 @@
 		draggable_width: '20%',
 		draggable_height: '',
 		draggable_aspect_ratio: '1',
-		container_background_image: null
+		container_background_image: ''
 	})
 
 	const aspect_ratios = computed(() => {
@@ -173,13 +173,8 @@
 
 	function set_image_object(event){
 		let image = Array.from(event.target.files).pop()
-		let current_image_element = document.querySelector('#current-image')
-		let style = current_image_element.style
-
 		image_object_src.value = URL.createObjectURL(image)
-		style.backgroundImage = 'url('+ image_object_src.value +')'
-		style.backgroundSize = 'cover'
-		image_cropper_props.container_background_image = style.backgroundImage
+		image_cropper_props.container_background_image = image_object_src.value
 	}
 
 	function add_aspect_ratio(event){
@@ -292,7 +287,7 @@
 </script>
 
 <template>
-	<main id="container">
+	<main id="c">
 		<div id="left">
 			<span id="help-title">How to use</span>
 			<p id="help-text">
@@ -310,11 +305,28 @@
 				<ImageCropper v-if="image_object_src" v-bind="image_cropper_props" />
 			</div>
 			<div id="button-bar">
-				<button @click="previous_image" id="previous"><img id="previous-icon" src="/left.svg"></button>
-				<button @click="next_image" id="next"><img id="next-icon" src="/right.svg"></button>
-				<button id="download-images"><img id="download-icon" src="/download.svg"></button>
-				<button v-if="image_object_src" @click="clear_image" id="clear"><img id="clear-icon" src="/remove.svg"></button>
-				<button @click="toggle_help" id="help"><img id="help-icon" src="/help.svg">
+				<button @click="previous_image" id="previous">
+					<img id="previous-icon" src="/left.svg">
+					<div class="tooltip">Previous aspect ratio</div>
+				</button>
+				<button @click="next_image" id="next">
+					<img id="next-icon" src="/right.svg">
+					<div class="tooltip">Next aspect ratio</div>
+				</button>
+				<button id="download-images">
+					<img id="download-icon" src="/download.svg">
+					<div class="tooltip">Download cropped images</div>
+				</button>
+				<button v-if="image_object_src" @click="clear_image" id="clear">
+					<img id="clear-icon" src="/remove.svg">
+					<div class="tooltip">Reset image</div>
+				</button>
+				<button v-if="image_object_src" @click="take_snapshot" id="crop">
+					<img id="crop-icon" src="/crop.svg">
+					<div class="tooltip">Crop image</div>
+				</button>
+				<button @click="toggle_help" id="help">
+					<img id="help-icon" src="/help.svg">
 					<div class="tooltip">Toggle help</div>
 				</button>
 			</div>
@@ -343,7 +355,7 @@
 </template>
 
 <style lang="scss" scoped>
-	#container{
+	#c{
 		margin: 0px 90px 20px 90px;
 		color: #333333;
 		font-family: helvetica;
@@ -435,7 +447,7 @@
 				align-items: center;
 				justify-content: start;
 
-				#previous, #next, #download-images, #help, #clear{
+				#previous, #next, #download-images, #help, #clear, #crop{
 					border-radius: 5px;
 					display: flex;
 					position: relative;
@@ -455,7 +467,7 @@
 					.tooltip{
 						background-color: #cccccc;
 						border-radius: 5px;
-						top: -50px;
+						top: -60px;
 						z-index: 2;
 						position: absolute;
 						display: flex;
@@ -463,21 +475,39 @@
 						align-items: center;
 						justify-content: center;
 						opacity: 0;
-						transition: opacity 0.5s;
+						//transition: opacity 0.5s;
 						padding: 5px 10px 5px 10px;
-						font-size: 1.2em;
+						font-size: 1em;
 						color: #333333;
 						text-align: center;
 					}
 
+					@keyframes present_tooltip{
+						0% {
+							opacity: 0;
+						}
+
+						30%{
+							opacity: 1;
+						}
+
+						60%{
+							opacity: 1;
+						}
+
+						100%{
+							opacity: 0;
+						}
+					}
+
 					&:hover{
 						.tooltip{
-							opacity: 1;
+							animation: present_tooltip 2s;
 						}
 					}
 				}
 
-				#previous-icon, #next-icon, #download-icon, #help-icon, #clear-icon{
+				#previous-icon, #next-icon, #download-icon, #help-icon, #clear-icon, #crop-icon{
 					height: 30px;
 					aspect-ratio: 1;
 				}

@@ -1,11 +1,8 @@
 <script setup>
 	import {ref, computed, triggerRef, shallowRef, defineProps, onMounted, watch, reactive, nextTick, onUnmounted} from 'vue'
+	import { calculate_centered_image_position, calculate_covering_image_position } from '../helpers/calculations.js'
+	import { container, last_cursor_position, current_cursor_position, drag_started, drag_finished,calculate_x_position, calculate_y_position, calculate_opacity_position, start_drag, set_current_cursor_position, set_last_cursor_position, update_refs, crop_window_setup, crop_window_teardown} from '../helpers/crop_window.js'
 
-	const container = shallowRef(null)
-	const last_cursor_position = ref(null)
-	const current_cursor_position = ref(null)
-	const drag_started = ref(false)
-	const drag_finished = ref(false)
 	const draggable_aspect_ratio = ref(props.draggable_aspect_ratio)
 	const draggable_width = ref(props.draggable_width)
 	const draggable_height = ref(props.draggable_height)
@@ -13,13 +10,14 @@
 	const container_width = ref(props.container_width)
 	const container_height = ref(props.container_height)
 	const container_background_image = ref(props.container_background_image)
+	const image_aspect_ratio = ref(null)
 
 	const container_style = computed(() => {
 		return {
 			width: props.container_width,
 			height: props.container_height,
 			aspectRatio: props.container_aspect_ratio,
-			backgroundImage: props.container_background_image
+			backgroundImage: 'url('+props.container_background_image+')'
 		}
 	})
 
@@ -38,7 +36,7 @@
 		draggable_width: { type: String, default: '200px'},
 		draggable_height: { type: String, default: ''},
 		draggable_aspect_ratio: { type: [String,Number], default: '2 / 1'},
-		container_background_image: {type: String, default: "url('/flower.jpeg')"},
+		container_background_image: { type: String, default: "url('/flower.jpeg')"}
 	})
 
 	watch(draggable_style,() => nextTick(calculate_opacity_position))
@@ -51,218 +49,6 @@
 		update_refs()
 	}
 
-	function set_current_cursor_position(event){
-		current_cursor_position.value = {x: event.pageX, y: event.pageY}
-	}
-
-	function calculate_x_position(){
-		let container_box = container.value.getBoundingClientRect()
-		let draggable = document.querySelector('#crop-window')
-		let page_x = current_cursor_position.value.x
-		let draggable_box = draggable.getBoundingClientRect()
-		let left = draggable_box.left - container_box.left
-
-		if(cursor_is_not_at_screen_origin()){
-			if(!drag_is_happening()){
-				page_x = last_cursor_position.value.x
-			}
-
-			if(draggable_should_move_x()){
-				draggable.style.left = (left+page_x-last_cursor_position.value.x).toString()+'px'
-			}
-
-			draggable_box = draggable.getBoundingClientRect()
-
-			if(draggable_box.left < container_box.left){
-				draggable.style.left = 0
-			}
-
-			draggable_box = draggable.getBoundingClientRect()
-
-			if(draggable_box.right > container_box.right){
-				draggable.style.left = (container_box.width - draggable_box.width).toString()+'px'
-			}
-
-			last_cursor_position.value.x = page_x
-		}
-	}
-
-	function draggable_should_move_x(){
-		return !draggable_should_not_move_x()
-	}
-
-	function draggable_should_not_move_x(){
-		let x_coordinate = current_cursor_position.value.x
-		let page_x = drag_is_happening() ? x_coordinate : last_cursor_position.value.x
-		let displacement = page_x-last_cursor_position.value.x
-		let should_not_move_to_right = null
-		let should_not_move_to_left = null
-		
-		should_not_move_to_right = displacement > 0 && cursor_off_limits_left()
-		should_not_move_to_left = displacement < 0 && cursor_off_limits_right()
-
-		return should_not_move_to_right || should_not_move_to_left
-	}
-
-	function cursor_off_limits_left(){
-		let container_box = container.value.getBoundingClientRect()
-		let x_coordinate = current_cursor_position.value.x
-		let page_x = drag_is_happening() ? x_coordinate : last_cursor_position.value.x
-		return page_x < container_box.left
-	}
-
-	function cursor_off_limits_right(){
-		let container_box = container.value.getBoundingClientRect()
-		let x_coordinate = current_cursor_position.value.x
-		let page_x = drag_is_happening() ? x_coordinate : last_cursor_position.value.x
-		return page_x > container_box.right
-	}
-
-	function calculate_y_position(){
-		let container_box = container.value.getBoundingClientRect()
-		let draggable = document.querySelector('#crop-window')
-		let page_y = current_cursor_position.value.y
-		let draggable_box = draggable.getBoundingClientRect()
-		let top = draggable_box.top - container_box.top
-
-		if(cursor_is_not_at_screen_origin()){
-			if(!drag_is_happening()){
-				page_y = last_cursor_position.value.y
-			}
-
-			if(draggable_should_move_y()){
-				draggable.style.top = (top+page_y-last_cursor_position.value.y).toString()+'px'
-			}
-
-			draggable_box = draggable.getBoundingClientRect()
-
-			if(draggable_box.top < container_box.top){
-				draggable.style.top = 0
-			}
-
-			draggable_box = draggable.getBoundingClientRect()
-
-			if(draggable_box.bottom > container_box.bottom){
-				draggable.style.top = (container_box.height - draggable_box.height).toString()+'px'
-			}
-
-			last_cursor_position.value.y = page_y
-		}
-	}
-
-	function draggable_should_move_y(){
-		return !draggable_should_not_move_y()
-	}
-
-	function draggable_should_not_move_y(){
-		let y_coordinate = current_cursor_position.value.y
-		let page_y = drag_is_happening() ? y_coordinate : last_cursor_position.value.y
-		let displacement = page_y-last_cursor_position.value.y
-		let should_not_move_to_top = null
-		let should_not_move_to_bottom = null
-		
-		should_not_move_to_top = displacement < 0 && cursor_off_limits_bottom()
-		should_not_move_to_bottom = displacement > 0 && cursor_off_limits_top()
-
-		return should_not_move_to_top || should_not_move_to_bottom
-	}
-
-	function cursor_off_limits_top(){
-		let y_coordinate = current_cursor_position.value.y
-		let container_box = container.value.getBoundingClientRect()
-		let page_y = drag_is_happening() ? y_coordinate : last_cursor_position.value.y
-		return page_y < container_box.top
-	}
-
-	function cursor_off_limits_bottom(){
-		let y_coordinate = current_cursor_position.value.y
-		let container_box = container.value.getBoundingClientRect()
-		let page_y = drag_is_happening() ? y_coordinate : last_cursor_position.value.y
-		return page_y > container_box.bottom
-	}
-
-	function cursor_is_not_at_screen_origin(){
-		let page_x = current_cursor_position.value.x
-		let page_y = current_cursor_position.value.y
-		return page_x != 0 || page_y != 0
-	}
-
-	function drag_is_happening(){
-		return drag_started.value && !drag_finished.value
-	}
-
-	function calculate_opacity_position(){
-		calculate_opacity_top_position()
-		calculate_opacity_right_position()
-		calculate_opacity_bottom_position()
-		calculate_opacity_left_position()
-	}
-
-	function calculate_opacity_top_position(){
-		let container_box = container.value.getBoundingClientRect()
-		let draggable = document.querySelector('#crop-window')
-		let opacity_top = document.querySelector('#opacity-top')
-		let draggable_box = draggable.getBoundingClientRect()
-		let style = opacity_top.style
-
-		style.left = draggable.style.left
-		style.width = (container_box.right - draggable_box.left).toString()+'px'
-		style.height = (draggable_box.top - container_box.top).toString()+'px'
-	}
-
-	function calculate_opacity_right_position(){
-		let container_box = container.value.getBoundingClientRect()
-		let draggable = document.querySelector('#crop-window')
-		let opacity_right = document.querySelector('#opacity-right')
-		let draggable_box = draggable.getBoundingClientRect()
-		let style = opacity_right.style
-
-		style.top = draggable.style.top
-		style.width = (container_box.right - draggable_box.right).toString()+'px'
-		style.height = (container_box.bottom - draggable_box.top).toString()+'px'
-	}
-
-	function calculate_opacity_bottom_position(){
-		let container_box = container.value.getBoundingClientRect()
-		let draggable = document.querySelector('#crop-window')
-		let opacity_bottom = document.querySelector('#opacity-bottom')
-		let draggable_box = draggable.getBoundingClientRect()
-		let style = opacity_bottom.style
-
-		style.top = draggable_box.bottom - container_box.top
-		style.width = (draggable_box.right - container_box.left).toString()+'px'
-		style.height = (container_box.bottom - draggable_box.bottom).toString()+'px'
-	}
-
-	function calculate_opacity_left_position(){
-		let container_box = container.value.getBoundingClientRect()
-		let draggable = document.querySelector('#crop-window')
-		let opacity_left = document.querySelector('#opacity-left')
-		let draggable_box = draggable.getBoundingClientRect()
-		let style = opacity_left.style
-
-		style.left = container_box.left
-		style.width = (draggable_box.left - container_box.left).toString()+'px'
-		style.height = (draggable_box.bottom - container_box.top).toString()+'px'
-	}
-
-	function update_refs(){
-		container.value = document.querySelector('#image-cropper')
-		triggerRef(container)
-	}
-
-	function finish_drag(event){
-		event.preventDefault()
-		drag_finished.value = true;
-		update_draggable_position(event)
-		reset_positions()
-	}
-
-	function reset_positions(){
-		last_cursor_position.value = null
-		current_cursor_position.value = null
-	}
-
 	function setup_drag(event){
 		hide_ghost(event)
 		start_drag()
@@ -273,58 +59,21 @@
 		event.dataTransfer.setDragImage(container,0,0);
 	}
 
-	function start_drag(){
-		drag_started.value = true
-		drag_finished.value = false
-	}
-
-	function set_last_cursor_position(event){
-		last_cursor_position.value = {x: event.pageX,y: event.pageY}
-	}
-
-	function adjust_component_size(){
-		triggerRef(container)
-		nextTick(() => {
-			start_drag()
-			set_current_resizing_position()
-			calculate_x_position()
-			calculate_y_position()
-			calculate_opacity_position()
-			finish_drag()
-		})
-	}
-
-	function set_current_resizing_position(){
-		let draggable = document.querySelector('#crop-window')
-		let draggable_box = draggable.getBoundingClientRect()
-		let container_box = container.value.getBoundingClientRect()
-
-		current_cursor_position.value = {
-			x: container_box.left,
-			y: container_box.top
-		}
-
-		last_cursor_position.value = {
-			x: container_box.left,
-			y: container_box.top
-		}
-	}
-
-	function add_resize_listener(){
-		window.addEventListener('resize',adjust_component_size)
-	}
-
-	function remove_resize_listener(){
-		window.addEventListener('resize',adjust_component_size)
+	function set_image_aspect_ratio(){
+		let image = new Image()
+		image.src = container_background_image.value
+		let natural_width = image.naturalWidth
+		let natural_height = image.naturalHeight
+		image_aspect_ratio.value = natural_width/natural_height
 	}
 
 	onMounted(() => {
-		calculate_opacity_position()
-		add_resize_listener()
+		crop_window_setup()
+		set_image_aspect_ratio()
 	})
 
 	onUnmounted(() => {
-		remove_resize_listener()
+		crop_window_teardown()
 	})
 </script>
 
@@ -335,6 +84,10 @@
 		<div id="opacity-bottom"></div>
 		<div id="opacity-left"></div>
 		<div id="opacity-right"></div>
+		<div id="zoom-controls">
+			<button id="zoom-in-button"><img id="zoom-in" src="/add.svg"></button>
+			<button id="zoom-out-button"><img id="zoom-out" src="/minus.svg"></button>
+		</div>
 	</main>
 </template>
 
@@ -410,6 +163,41 @@
 			opacity: 0.7;
 			width: 0px;
 			height: 100px;
+		}
+
+		#zoom-controls{
+			right: -60px;
+			position: absolute;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+
+			#zoom-in-button{
+				border: none;
+				border-radius: 5px 5px 0px 0px;
+				background-color: #333333;
+				width: 50px;
+				aspect-ratio: 1;
+				#zoom-in{
+					width: 30px;
+					aspect-ratio: 1;
+				}
+			}
+
+			#zoom-out-button{
+				margin: 5px 0px 0px 0px;
+				border: none;
+				border-radius: 0px 0px 5px 5px;
+				background-color: #333333;
+				width: 50px;
+				aspect-ratio: 1;
+				
+				#zoom-out{
+					width: 30px;
+					aspect-ratio: 1;
+				}
+			}
 		}
 	}
 </style>
