@@ -287,7 +287,7 @@
 </script>
 
 <template>
-	<main id="c">
+	<main id="container">
 		<div id="left">
 			<span id="help-title">How to use</span>
 			<p id="help-text">
@@ -355,7 +355,7 @@
 </template>
 
 <style lang="scss" scoped>
-	#c{
+	#container{
 		margin: 0px 90px 20px 90px;
 		color: #333333;
 		font-family: helvetica;

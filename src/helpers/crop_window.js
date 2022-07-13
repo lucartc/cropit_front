@@ -1,17 +1,19 @@
-	import {ref, computed, triggerRef, shallowRef, onMounted, onUnmounted, nextTick} from 'vue'
+	import {ref, computed, triggerRef, onMounted, onUnmounted, nextTick} from 'vue'
 
-	const container = shallowRef(null)
 	const last_cursor_position = ref(null)
 	const current_cursor_position = ref(null)
 	const drag_started = ref(false)
 	const drag_finished = ref(false)
 
+	const container = function(){
+		return document.querySelector('#image-cropper')
+	}
+	
 	function update_crop_position(event){
 		set_current_cursor_position(event)
 		calculate_x_position()
 		calculate_y_position()
 		calculate_opacity_position()
-		update_refs()
 	}
 
 	function set_current_cursor_position(event){
@@ -19,7 +21,7 @@
 	}
 
 	function calculate_x_position(){
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let crop = document.querySelector('#crop-window')
 		let page_x = current_cursor_position.value.x
 		let crop_box = crop.getBoundingClientRect()
@@ -68,21 +70,21 @@
 	}
 
 	function cursor_off_limits_left(){
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let x_coordinate = current_cursor_position.value.x
 		let page_x = drag_is_happening() ? x_coordinate : last_cursor_position.value.x
-		return page_x < container_box.left
+		return page_x < (container_box.left + window.scrollX)
 	}
 
 	function cursor_off_limits_right(){
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let x_coordinate = current_cursor_position.value.x
 		let page_x = drag_is_happening() ? x_coordinate : last_cursor_position.value.x
-		return page_x > container_box.right
+		return page_x > (container_box.right + window.scrollX)
 	}
 
 	function calculate_y_position(){
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let crop = document.querySelector('#crop-window')
 		let page_y = current_cursor_position.value.y
 		let crop_box = crop.getBoundingClientRect()
@@ -123,7 +125,7 @@
 		let displacement = page_y-last_cursor_position.value.y
 		let should_not_move_to_top = null
 		let should_not_move_to_bottom = null
-		
+
 		should_not_move_to_top = displacement < 0 && cursor_off_limits_bottom()
 		should_not_move_to_bottom = displacement > 0 && cursor_off_limits_top()
 
@@ -132,22 +134,25 @@
 
 	function cursor_off_limits_top(){
 		let y_coordinate = current_cursor_position.value.y
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let page_y = drag_is_happening() ? y_coordinate : last_cursor_position.value.y
-		return page_y < container_box.top
+		return page_y < (container_box.top + window.scrollY)
 	}
 
 	function cursor_off_limits_bottom(){
 		let y_coordinate = current_cursor_position.value.y
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let page_y = drag_is_happening() ? y_coordinate : last_cursor_position.value.y
-		return page_y > container_box.bottom
+		return page_y > (container_box.bottom + window.scrollY)
 	}
 
 	function cursor_is_not_at_screen_origin(){
 		let page_x = current_cursor_position.value.x
 		let page_y = current_cursor_position.value.y
-		return page_x != 0 || page_y != 0
+		let viewport = {x: null, y: null}
+		viewport.x = Math.trunc(window.scrollX)
+		viewport.y = Math.trunc(window.scrollY)
+		return page_x != viewport.x || page_y != viewport.y
 	}
 
 	function drag_is_happening(){
@@ -162,56 +167,51 @@
 	}
 
 	function calculate_opacity_top_position(){
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let crop = document.querySelector('#crop-window')
 		let opacity_top = document.querySelector('#opacity-top')
 		let crop_box = crop.getBoundingClientRect()
 		let style = opacity_top.style
 
 		style.left = crop.style.left
-		style.width = (container_box.right - crop_box.left).toString()+'px'
-		style.height = (crop_box.top - container_box.top).toString()+'px'
+		style.width = Math.abs(container_box.right - crop_box.left).toString()+'px'
+		style.height = Math.abs(crop_box.top - container_box.top).toString()+'px'
 	}
 
 	function calculate_opacity_right_position(){
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let crop = document.querySelector('#crop-window')
 		let opacity_right = document.querySelector('#opacity-right')
 		let crop_box = crop.getBoundingClientRect()
 		let style = opacity_right.style
 
 		style.top = crop.style.top
-		style.width = (container_box.right - crop_box.right).toString()+'px'
-		style.height = (container_box.bottom - crop_box.top).toString()+'px'
+		style.width = Math.abs(container_box.right - crop_box.right).toString()+'px'
+		style.height = Math.abs(container_box.bottom - crop_box.top).toString()+'px'
 	}
 
 	function calculate_opacity_bottom_position(){
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let crop = document.querySelector('#crop-window')
 		let opacity_bottom = document.querySelector('#opacity-bottom')
 		let crop_box = crop.getBoundingClientRect()
 		let style = opacity_bottom.style
 
 		style.top = crop_box.bottom - container_box.top
-		style.width = (crop_box.right - container_box.left).toString()+'px'
-		style.height = (container_box.bottom - crop_box.bottom).toString()+'px'
+		style.width = Math.abs(crop_box.right - container_box.left).toString()+'px'
+		style.height = Math.abs(container_box.bottom - crop_box.bottom).toString()+'px'
 	}
 
 	function calculate_opacity_left_position(){
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 		let crop = document.querySelector('#crop-window')
 		let opacity_left = document.querySelector('#opacity-left')
 		let crop_box = crop.getBoundingClientRect()
 		let style = opacity_left.style
 
 		style.left = container_box.left
-		style.width = (crop_box.left - container_box.left).toString()+'px'
-		style.height = (crop_box.bottom - container_box.top).toString()+'px'
-	}
-
-	function update_refs(){
-		container.value = document.querySelector('#image-cropper')
-		triggerRef(container)
+		style.width = Math.abs(crop_box.left - container_box.left).toString()+'px'
+		style.height = Math.abs(crop_box.bottom - container_box.top).toString()+'px'
 	}
 
 	function finish_drag(event){
@@ -223,7 +223,7 @@
 	function set_current_resizing_position(){
 		let crop = document.querySelector('#crop-window')
 		let crop_box = crop.getBoundingClientRect()
-		let container_box = container.value.getBoundingClientRect()
+		let container_box = container().getBoundingClientRect()
 
 		current_cursor_position.value = {
 			x: container_box.left,
@@ -289,7 +289,6 @@
 	}
 
 	export {
-		container,
 		set_last_cursor_position as set_cursor_position,
 		start_drag,
 		finish_drag,

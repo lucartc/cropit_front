@@ -1,7 +1,7 @@
 <script setup>
 	import {ref, computed, triggerRef, shallowRef, defineProps, onMounted, watch, reactive, nextTick, onUnmounted} from 'vue'
 	import { calculate_centered_image_position, calculate_covering_image_position } from '../helpers/calculations.js'
-	import { container, finish_drag, start_drag, set_cursor_position ,crop_window_setup, crop_window_teardown, update_crop_position} from '../helpers/crop_window.js'
+	import { finish_drag, start_drag, set_cursor_position ,crop_window_setup, crop_window_teardown, update_crop_position} from '../helpers/crop_window.js'
 
 	const draggable_aspect_ratio = ref(props.draggable_aspect_ratio)
 	const draggable_width = ref(props.draggable_width)
@@ -11,6 +11,7 @@
 	const container_height = ref(props.container_height)
 	const container_background_image = ref(props.container_background_image)
 	const image_aspect_ratio = ref(null)
+	const another_container = ref(null)
 
 	const container_style = computed(() => {
 		return {
@@ -49,6 +50,18 @@
 		image_aspect_ratio.value = natural_width/natural_height
 	}
 
+	function change_zoom(event){
+		console.log('changing zoom...')
+	}
+
+	function zoom_in(event){
+		console.log('zooming in...')
+	}
+
+	function zoom_out(event){
+		console.log('zooming out...')
+	}
+
 	onMounted(() => {
 		crop_window_setup()
 		set_image_aspect_ratio()
@@ -60,15 +73,15 @@
 </script>
 
 <template>
-	<main :style="container_style"  ref="container" id="image-cropper">
+	<main @wheel="change_zoom" :style="container_style" id="image-cropper">
 		<div :style="draggable_style" @mousedown="set_cursor_position" @dragstart="start_drag" @dragend="finish_drag" @drag="update_crop_position" id="crop-window" draggable="true"></div>
 		<div id="opacity-top"></div>
 		<div id="opacity-bottom"></div>
 		<div id="opacity-left"></div>
 		<div id="opacity-right"></div>
 		<div id="zoom-controls">
-			<button id="zoom-in-button"><img id="zoom-in" src="/add.svg"></button>
-			<button id="zoom-out-button"><img id="zoom-out" src="/minus.svg"></button>
+			<button @click="zoom_in" id="zoom-in-button"><img id="zoom-in" src="/add.svg"></button>
+			<button @click="zoom_out" id="zoom-out-button"><img id="zoom-out" src="/minus.svg"></button>
 		</div>
 	</main>
 </template>
