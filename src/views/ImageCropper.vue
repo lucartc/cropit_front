@@ -109,18 +109,15 @@ function change_zoom(event) {
   // 		height_percentage = parseFloat(image_size.split(' ').pop()) + 10
   // 		style.backgroundSize = `${width_percentage}% ${height_percentage}%`
   // }
-  const image = new Image();
-  const container = document.querySelector("#image-cropper");
-  image.src = container_background_image.value;
-  image.addEventListener("load", () => {
-    if (event.deltaY > 0) {
-      zoom(image, container,'out');
-      console.log("zooming out...");
-    } else {
-      zoom(image, container,'in');
-      console.log("zooming in...");
-    }
-  });
+  const crop = document.querySelector('#crop-window')
+  const container = document.querySelector("#image-cropper")
+  if (event.deltaY > 0) {
+    zoom(crop, container,'out');
+    console.log("zooming out...");
+  } else {
+    zoom(crop, container,'in');
+    console.log("zooming in...");
+  }
 }
 
 function zooming_in(event) {
