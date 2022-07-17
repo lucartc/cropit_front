@@ -14,13 +14,10 @@ function image_aspect_ratio(image) {
   return parseFloat(width) / parseFloat(height);
 }
 
-// Calculates image position when it's centered inside its container.
 function calculate_centered_image_position(image, container,in_out) {
   const container_box = container.getBoundingClientRect();
   const image_width = image.naturalWidth;
   const image_height = image.naturalHeight;
-
-  // Starts calculating image rendered width and height.
 
   let rendered_width = null;
   let rendered_height = null;
@@ -32,9 +29,6 @@ function calculate_centered_image_position(image, container,in_out) {
     rendered_height = container_box.height;
     rendered_width = container_box.height * image_aspect_ratio(image);
   }
-
-  // Now proceeds to calculate the margins between the image and the container,
-  // if there are any.
 
   let left = null;
   let top = null;
@@ -69,9 +63,6 @@ function calculate_covering_image_position(image,container,in_out) {
   let image_height = null;
   let image_width = null;
 
-  // Checks which resizing will make the image cover the container completely,
-  // with the smallest size possible.
-
   if (height_aligned_area > container_area) {
     image_height = container_box.height;
     image_width = container_box.height * image_aspect_ratio(image);
@@ -79,9 +70,6 @@ function calculate_covering_image_position(image,container,in_out) {
     image_width = container_box.width;
     image_height = container_box.width * (1 / image_aspect_ratio(image));
   }
-
-  // calculates the margin necessary so that the image will be vertically
-  // or horizontally alligned with the container.
 
   const left = Math.abs(image_width - container_box.width) / 2;
   const top = Math.abs(image_height - container_box.height) / 2;
@@ -94,8 +82,6 @@ function calculate_covering_image_position(image,container,in_out) {
   };
 }
 
-// Scales the image as large as possible within its container without
-// cropping or stretching the image.
 function calculate_containing_image_position(image, container,in_out) {
   const container_box = container.getBoundingClientRect();
   const container_computed_style = getComputedStyle(container);
@@ -210,14 +196,9 @@ function resize_dimensions(dimensions,crop,container,in_out){
     y: crop_box.top - container_box.top + crop_box.height/2,
   };
 
-  let image_to_crop_distance = {
-  	x: image_center.x - crop_center.x,
-  	y: image_center.y - crop_center.y
-  }
-
   let new_image_to_crop_distance = {
-    x: image_to_crop_distance.x * scaling_factor(in_out),
-    y: image_to_crop_distance.y * scaling_factor(in_out),
+    x: (image_center.x - crop_center.x) * scaling_factor(in_out),
+    y: (image_center.y - crop_center.y) * scaling_factor(in_out),
   }
 
 	let bottom = Math.abs(new_image_to_crop_distance.y) - Math.abs(dimensions.image_height/2) + Math.abs(crop_box.height/2) + Math.abs(container_box.bottom - crop_box.bottom)
