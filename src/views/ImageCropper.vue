@@ -13,10 +13,7 @@ import {
 } from "vue";
 
 import {
-  calculate_centered_image_position,
-  calculate_covering_image_position,
-  calculate_containing_image_position,
-  zoom,
+  zoom
 } from "../helpers/zooming.js";
 
 import {
@@ -82,42 +79,19 @@ function set_image_dimensions() {
 }
 
 function change_zoom(event) {
-  // let container = document.querySelector('#image-cropper')
-  // let container_computed_style = getComputedStyle(container)
-  // let image_size = container_computed_style.backgroundSize
-  // let image_position = container_computed_style.backgroundPosition
-  // let style = container.style
-  // let position = null
-  // let width_percentage = null
-  // let height_percentage = null
-
-  // switch(image_size){
-  // 	case 'contain':
-  // 		console.log('contain...')
-  // 		// calculate image width and height in a covering size
-  // 		position = calculate_containing_image_position()
-  // 		break;
-  // 	case 'cover':
-  // 		console.log('cover...')
-  // 		// calculate image width and height in a covering size
-  // 		position = calculate_covering_image_position()
-  // 		width_percentage = position.image_width/image_natural_width.value
-  // 		height_percentage = position.image_height/image_natural_height.value
-  // 		break;
-  // 	default:
-  // 		width_percentage = parseFloat(image_size.split(' ').shift()) + 10
-  // 		height_percentage = parseFloat(image_size.split(' ').pop()) + 10
-  // 		style.backgroundSize = `${width_percentage}% ${height_percentage}%`
-  // }
-  const crop = document.querySelector('#crop-window')
   const container = document.querySelector("#image-cropper")
+  let cursor_position = {
+  	x: event.pageX,
+  	y: event.pageY
+  }
   if (event.deltaY > 0) {
-    zoom(crop, container,'out');
+    zoom(cursor_position,container,'out');
     console.log("zooming out...");
   } else {
-    zoom(crop, container,'in');
+    zoom(cursor_position,container,'in');
     console.log("zooming in...");
   }
+	event.preventDefault()
 }
 
 function zooming_in(event) {
@@ -136,10 +110,23 @@ onMounted(() => {
 onUnmounted(() => {
   crop_window_teardown();
 });
+
+function keep_dragging_bg(event){
+
+}
+
+function start_bg_drag(event){
+
+}
+
+function end_bg_drag(event){
+
+}
+
 </script>
 
 <template>
-  <main @wheel="change_zoom" :style="container_style" id="image-cropper">
+  <main @wheel="change_zoom" @drag="keep_dragging_bg" @dragstart="start_bg_drag" @dragend="end_bg_drag" :style="container_style" id="image-cropper">
     <div
       :style="draggable_style"
       @mousedown="set_cursor_position"
