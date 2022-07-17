@@ -1,20 +1,7 @@
 <script setup>
-import {
-  ref,
-  computed,
-  triggerRef,
-  shallowRef,
-  defineProps,
-  onMounted,
-  watch,
-  reactive,
-  nextTick,
-  onUnmounted,
-} from "vue";
+import { ref, computed, defineProps, onMounted, onUnmounted } from "vue";
 
-import {
-  zoom
-} from "../helpers/zooming.js";
+import { zoom } from "../helpers/zooming.js";
 
 import {
   finish_drag,
@@ -34,11 +21,6 @@ const container_height = ref(props.container_height);
 const container_background_image = ref(props.container_background_image);
 const image_natural_width = ref(null);
 const image_natural_height = ref(null);
-const another_container = ref(null);
-
-const image_aspect_ratio = computed(() => {
-  return image_natural_width.value / image_natural_height.value;
-});
 
 const container_style = computed(() => {
   return {
@@ -67,8 +49,6 @@ const props = defineProps({
   container_background_image: { type: String, default: "url('/flower.jpeg')" },
 });
 
-watch(draggable_style, () => nextTick(calculate_opacity_position));
-
 function set_image_dimensions() {
   const image = new Image();
   image.src = container_background_image.value;
@@ -79,26 +59,42 @@ function set_image_dimensions() {
 }
 
 function change_zoom(event) {
-  const container = document.querySelector("#image-cropper")
-  let cursor_position = {
-  	x: event.pageX,
-  	y: event.pageY
-  }
+  const container = document.querySelector("#image-cropper");
+  const cursor_position = {
+    x: event.pageX,
+    y: event.pageY,
+  };
   if (event.deltaY > 0) {
-    zoom(cursor_position,container,'out');
+    zoom(cursor_position, container, "out");
     console.log("zooming out...");
   } else {
-    zoom(cursor_position,container,'in');
+    zoom(cursor_position, container, "in");
     console.log("zooming in...");
   }
-	event.preventDefault()
+  event.preventDefault();
 }
 
-function zooming_in(event) {
+function zooming_in() {
+  const container = document.querySelector("#image-cropper");
+  const crop = document.querySelector("#crop-window");
+  const crop_box = crop.getBoundingClientRect();
+  const cursor_position = {
+    x: crop_box.left + crop_box.width / 2,
+    y: crop_box.top + crop_box.height / 2,
+  };
+  zoom(cursor_position, container, "in");
   console.log("zooming in...");
 }
 
-function zooming_out(event) {
+function zooming_out() {
+  const container = document.querySelector("#image-cropper");
+  const crop = document.querySelector("#crop-window");
+  const crop_box = crop.getBoundingClientRect();
+  const cursor_position = {
+    x: crop_box.left + crop_box.width / 2,
+    y: crop_box.top + crop_box.height / 2,
+  };
+  zoom(cursor_position, container, "out");
   console.log("zooming out...");
 }
 
@@ -110,23 +106,17 @@ onMounted(() => {
 onUnmounted(() => {
   crop_window_teardown();
 });
-
-function keep_dragging_bg(event){
-
-}
-
-function start_bg_drag(event){
-
-}
-
-function end_bg_drag(event){
-
-}
-
 </script>
 
 <template>
-  <main @wheel="change_zoom" @drag="keep_dragging_bg" @dragstart="start_bg_drag" @dragend="end_bg_drag" :style="container_style" id="image-cropper">
+  <main
+    @wheel="change_zoom"
+    @drag="keep_dragging_bg"
+    @dragstart="start_bg_drag"
+    @dragend="end_bg_drag"
+    :style="container_style"
+    id="image-cropper"
+  >
     <div
       :style="draggable_style"
       @mousedown="set_cursor_position"
