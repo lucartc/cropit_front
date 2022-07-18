@@ -4,6 +4,12 @@ import { ref, computed, defineProps, onMounted, onUnmounted } from "vue";
 import { zoom } from "../helpers/zooming.js";
 
 import {
+	start_background_dragging,
+	background_drag,
+	finish_background_dragging
+} from "../helpers/background_dragging.js"
+
+import {
   finish_drag,
   start_drag,
   set_cursor_position,
@@ -21,6 +27,8 @@ const container_height = ref(props.container_height);
 const container_background_image = ref(props.container_background_image);
 const image_natural_width = ref(null);
 const image_natural_height = ref(null);
+const crop_container = ref(null);
+const crop_window = ref(null);
 
 const container_style = computed(() => {
   return {
@@ -66,10 +74,8 @@ function change_zoom(event) {
   };
   if (event.deltaY > 0) {
     zoom(cursor_position, container, "out");
-    console.log("zooming out...");
   } else {
     zoom(cursor_position, container, "in");
-    console.log("zooming in...");
   }
   event.preventDefault();
 }
@@ -83,7 +89,6 @@ function zooming_in() {
     y: crop_box.top + crop_box.height / 2,
   };
   zoom(cursor_position, container, "in");
-  console.log("zooming in...");
 }
 
 function zooming_out() {
@@ -95,11 +100,10 @@ function zooming_out() {
     y: crop_box.top + crop_box.height / 2,
   };
   zoom(cursor_position, container, "out");
-  console.log("zooming out...");
 }
 
 onMounted(() => {
-  crop_window_setup();
+  crop_window_setup(crop_container.value,crop_window.value);
   set_image_dimensions();
 });
 
@@ -110,14 +114,17 @@ onUnmounted(() => {
 
 <template>
   <main
+  	ref="crop_container"
     @wheel="change_zoom"
-    @drag="keep_dragging_bg"
-    @dragstart="start_bg_drag"
-    @dragend="end_bg_drag"
+    @drag="background_drag"
+    @dragstart="start_background_dragging($event,crop_container)"
+    @dragend="finish_background_dragging"
     :style="container_style"
     id="image-cropper"
+    draggable="true"
   >
     <div
+    	ref="crop_window"
       :style="draggable_style"
       @mousedown="set_cursor_position"
       @dragstart="start_drag"
