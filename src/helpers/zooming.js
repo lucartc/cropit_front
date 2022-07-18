@@ -1,7 +1,10 @@
-import { ref } from "vue";
 import {
-	convert_background_image_dimensions_to_pixels
-} from './background_image_dimensions.js'
+  ref
+} from "vue";
+
+import {
+  convert_background_image_dimensions_to_pixels
+} from "./background_image_dimensions.js";
 
 const image_current_position = ref(null);
 const image_current_size = ref(null);
@@ -19,17 +22,20 @@ function zoom(cursor_absolute_position, container, in_out) {
 
   background_image.addEventListener("load", () => {
     if (image_current_size.value == null) {
-      let dimensions = convert_background_image_dimensions_to_pixels(background_image,zoom_container.value);
-      
-      image_current_size.value = {
-    		x: dimensions.image_width,
-    		y: dimensions.image_height,
-  		};
+      const dimensions = convert_background_image_dimensions_to_pixels(
+        background_image,
+        zoom_container.value
+      );
 
-  		image_current_position.value = {
-    		x: dimensions.left,
-    		y: dimensions.top,
-  		};
+      image_current_size.value = {
+        x: dimensions.image_width,
+        y: dimensions.image_height,
+      };
+
+      image_current_position.value = {
+        x: dimensions.left,
+        y: dimensions.top,
+      };
     }
     calculate_zooming(cursor_absolute_position, in_out);
   });
@@ -63,9 +69,16 @@ function resize_dimensions(cursor_absolute_position, in_out) {
   const container_box = zoom_container.value.getBoundingClientRect();
 
   image_current_position.value = {
-  	x: parseFloat(zoom_container.value.style.backgroundPosition.split('px',2).shift().trim()),
-  	y: parseFloat(zoom_container.value.style.backgroundPosition.split('px',2).pop().trim())
-  }
+    x: parseFloat(
+      zoom_container.value.style.backgroundPosition
+        .split("px", 2)
+        .shift()
+        .trim()
+    ),
+    y: parseFloat(
+      zoom_container.value.style.backgroundPosition.split("px", 2).pop().trim()
+    ),
+  };
 
   const dimensions = {
     image_width: image_current_size.value.x,
