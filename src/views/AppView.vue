@@ -475,11 +475,14 @@
 						align-items: center;
 						justify-content: center;
 						opacity: 0;
-						//transition: opacity 0.5s;
 						padding: 5px 10px 5px 10px;
 						font-size: 1em;
 						color: #333333;
 						text-align: center;
+
+						&:hover{
+							visibility: hidden;
+						}
 					}
 
 					@keyframes present_tooltip{
