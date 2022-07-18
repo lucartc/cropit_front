@@ -249,6 +249,7 @@ function clear_image() {
 onUpdated(() => {
   update_active_aspect_ratio();
 });
+
 </script>
 
 <template>
@@ -483,10 +484,10 @@ onUpdated(() => {
         .tooltip {
           background-color: #cccccc;
           border-radius: 5px;
-          top: -60px;
+          bottom: -60px;
           z-index: 2;
           position: absolute;
-          display: flex;
+          display: none;
           flex-direction: column;
           align-items: center;
           justify-content: center;
@@ -495,10 +496,6 @@ onUpdated(() => {
           font-size: 1em;
           color: #333333;
           text-align: center;
-
-          &:hover {
-            visibility: hidden;
-          }
         }
 
         @keyframes present_tooltip {
@@ -521,6 +518,9 @@ onUpdated(() => {
 
         &:hover {
           .tooltip {
+            display: flex;
+            top: -60px;
+            bottom: auto;
             animation: present_tooltip 2s;
           }
         }

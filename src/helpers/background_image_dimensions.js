@@ -81,9 +81,9 @@ function calculate_covering_image_dimensions(image,container) {
 
 function calculate_containing_image_dimensions(image,container) {
 	const container_box = container.getBoundingClientRect();
-	const container_computed_style = getComputedStyle(container);
-	const position = container_computed_style.backgroundPosition;
-	const size = container_computed_style.backgroundSize;
+	const container_computed_style = getComputedStyle(container)
+	const position = container_computed_style.backgroundPosition
+	const size = container_computed_style.backgroundSize
 
 	if(position_in_pixels(container) && size_in_pixels(container)){
 		return {
@@ -93,24 +93,22 @@ function calculate_containing_image_dimensions(image,container) {
 			left: parseFloat(position.split('px',2).shift().trim())
 		}
 	}else{
-	  const distance_x_percentage = parseFloat(position.split("%", 2).shift());
-	  const distance_y_percentage = parseFloat(position.split("%", 2).pop().trim());
-	  let image_width = null;
+	  const container_area = container_box.width * container_box.height;
+	  const height_aligned_area =
+	    container_box.height ** 2 * image_aspect_ratio(image);
 	  let image_height = null;
-	  const distance_x_pixels = (container_box.width * distance_x_percentage) / 100;
-	  const distance_y_pixels =
-	    (container_box.height * distance_y_percentage) / 100;
+	  let image_width = null;
 
-	  if (image.naturalWidth > image.naturalHeight) {
-	    image_width = container_box.width;
-	    image_height = image_width * (1 / image_aspect_ratio(image));
-	  } else {
+	  if (height_aligned_area < container_area) {
 	    image_height = container_box.height;
-	    image_width = image_height * image_aspect_ratio(image);
+	    image_width = container_box.height * image_aspect_ratio(image);
+	  } else {
+	    image_width = container_box.width;
+	    image_height = container_box.width * (1 / image_aspect_ratio(image));
 	  }
 
-	  const top = distance_y_pixels - image_height / 2;
-	  const left = distance_x_pixels - image_width / 2;
+	  const top = Math.abs(image_height - container_box.height) / 2;
+	  const left = Math.abs(image_width - container_box.width) / 2;
 
 	  return {
 	    image_height: image_height,
