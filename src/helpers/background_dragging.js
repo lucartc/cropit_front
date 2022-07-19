@@ -20,20 +20,6 @@ function background_drag(event) {
   if (initial_position.value != null) {
     move_background_image(cursor_position);
   } else {
-    const background_image = new Image();
-    background_image.src = container_computed_style.backgroundImage
-      .replace('url("', "")
-      .replace('")', "");
-
-    background_image.addEventListener("load", (event) => {
-      convert_background_image_dimensions_to_pixels(
-        event.target,
-        background_container.value
-      );
-
-      update_background_dimensions(dimensions,zoom_container.value)
-    });
-
     const container_box = background_container.value.getBoundingClientRect();
 
     initial_position.value = {

@@ -1,5 +1,9 @@
 <script setup>
-import { ref, computed, defineProps, onMounted, onUnmounted } from "vue";
+import { ref, computed, defineProps, onMounted, onUnmounted, watch, nextTick } from "vue";
+import {
+  convert_background_image_dimensions_to_pixels,
+  update_background_dimensions
+} from '../helpers/background_image_dimensions.js'
 
 import { zoom } from "../helpers/zooming.js";
 
@@ -29,6 +33,7 @@ const image_natural_width = ref(null);
 const image_natural_height = ref(null);
 const crop_container = ref(null);
 const crop_window = ref(null);
+const is_image_loaded = ref(false);
 
 const container_style = computed(() => {
   return {
@@ -57,6 +62,12 @@ const props = defineProps({
   container_background_image: { type: String, default: "url('/flower.jpeg')" },
 });
 
+watch([crop_window,crop_container],(current,previous) => {
+  if(current.shift() != null && current.shift() != null){
+    crop_window_setup(crop_container.value,crop_window.value)
+  }
+})
+
 function set_image_dimensions() {
   const image = new Image();
   image.src = container_background_image.value;
@@ -64,6 +75,20 @@ function set_image_dimensions() {
   const natural_height = image.naturalHeight;
   image_natural_width.value = natural_width;
   image_natural_height.value = natural_height;
+  image.addEventListener('load',() => {
+    let loaded_image = event.target
+    console.log('loaded...')
+    is_image_loaded.value = true
+    nextTick(() => {
+      console.log(crop_container.value)
+      let dimensions = convert_background_image_dimensions_to_pixels(
+        loaded_image,
+        crop_container.value
+      )
+
+      update_background_dimensions(dimensions,crop_container.value)
+    })
+  })
 }
 
 function change_zoom(event) {
@@ -103,7 +128,6 @@ function zooming_out() {
 }
 
 onMounted(() => {
-  crop_window_setup(crop_container.value,crop_window.value);
   set_image_dimensions();
 });
 
@@ -114,6 +138,7 @@ onUnmounted(() => {
 
 <template>
   <main
+    v-if="is_image_loaded"
   	ref="crop_container"
     @wheel="change_zoom"
     @drag="background_drag"

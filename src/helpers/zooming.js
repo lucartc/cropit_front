@@ -13,35 +13,22 @@ const zoom_percentage = 5;
 const zoom_container = ref(null);
 
 function zoom(cursor_absolute_position, container, in_out) {
-  const background_image = new Image();
   const container_computed_style = getComputedStyle(container);
+  const image_size = container_computed_style.backgroundSize;
+  const image_position = container_computed_style.backgroundPosition;
   zoom_container.value = container;
 
-  background_image.src = container_computed_style.backgroundImage
-    .replace('url("', "")
-    .replace('")', "");
+  image_current_size.value = {
+    x: parseFloat(image_size.split('px',2).shift().trim()),
+    y: parseFloat(image_size.split('px',2).pop().trim())
+  };
 
-  background_image.addEventListener("load", () => {
-    if (image_current_size.value == null) {
-      const dimensions = convert_background_image_dimensions_to_pixels(
-        background_image,
-        zoom_container.value
-      );
-
-      update_background_dimensions(dimensions,zoom_container.value)
-
-      image_current_size.value = {
-        x: dimensions.image_width,
-        y: dimensions.image_height,
-      };
-
-      image_current_position.value = {
-        x: dimensions.left,
-        y: dimensions.top,
-      };
-    }
-    calculate_zooming(cursor_absolute_position, in_out);
-  });
+  image_current_position.value = {
+    x: parseFloat(image_position.split('px',2).shift().trim()),
+    y: parseFloat(image_position.split('px',2).pop().trim())
+  };
+  
+  calculate_zooming(cursor_absolute_position, in_out);
 }
 
 function calculate_zooming(cursor_absolute_position, in_out) {
