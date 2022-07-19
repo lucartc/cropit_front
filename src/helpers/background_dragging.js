@@ -1,4 +1,7 @@
-import { convert_background_image_dimensions_to_pixels } from "./background_image_dimensions.js";
+import {
+  convert_background_image_dimensions_to_pixels,
+  update_background_dimensions
+} from "./background_image_dimensions.js";
 
 import { ref } from "vue";
 
@@ -27,6 +30,8 @@ function background_drag(event) {
         event.target,
         background_container.value
       );
+
+      update_background_dimensions(dimensions,zoom_container.value)
     });
 
     const container_box = background_container.value.getBoundingClientRect();

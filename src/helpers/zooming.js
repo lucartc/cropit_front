@@ -3,7 +3,8 @@ import {
 } from "vue";
 
 import {
-  convert_background_image_dimensions_to_pixels
+  convert_background_image_dimensions_to_pixels,
+  update_background_dimensions
 } from "./background_image_dimensions.js";
 
 const image_current_position = ref(null);
@@ -26,6 +27,8 @@ function zoom(cursor_absolute_position, container, in_out) {
         background_image,
         zoom_container.value
       );
+
+      update_background_dimensions(dimensions,zoom_container.value)
 
       image_current_size.value = {
         x: dimensions.image_width,

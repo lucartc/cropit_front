@@ -28,8 +28,6 @@ function convert_background_image_dimensions_to_pixels(background_image,containe
   const height = image_dimensions.image_height;
   const distance_top = image_dimensions.top;
   const distance_left = image_dimensions.left;
-  style.backgroundSize = `${width}px ${height}px`;
-  style.backgroundPosition = `${distance_left}px ${distance_top}px`;
 
   return {
   	image_width: width,
@@ -37,6 +35,17 @@ function convert_background_image_dimensions_to_pixels(background_image,containe
   	top: distance_top,
   	left: distance_left
   }
+}
+
+function update_background_dimensions(dimensions,container){
+  const width = dimensions.image_width;
+  const height = dimensions.image_height;
+  const distance_top = dimensions.top;
+  const distance_left = dimensions.left;
+	const style = container.style
+
+  style.backgroundSize = `${width}px ${height}px`;
+  style.backgroundPosition = `${distance_left}px ${distance_top}px`;
 }
 
 function calculate_covering_image_dimensions(image,container) {
@@ -138,5 +147,6 @@ function image_aspect_ratio(image) {
 }
 
 export{
-	convert_background_image_dimensions_to_pixels
+	convert_background_image_dimensions_to_pixels,
+	update_background_dimensions
 }
