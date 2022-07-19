@@ -1,13 +1,24 @@
 import { ref, nextTick } from "vue";
 
-import { cursor_is_not_at_screen_origin, hide_ghost } from "./general.js";
+import {
+  cursor_is_not_at_screen_origin,
+  hide_ghost,
+  container,
+  crop_area,
+  opacity_top,
+  opacity_right,
+  opacity_bottom,
+  opacity_left
+} from "./general.js";
 
 const last_cursor_position = ref(null);
 const current_cursor_position = ref(null);
 const drag_started = ref(false);
 const drag_finished = ref(false);
-const crop_container = ref(false);
-const crop_window = ref(false);
+
+function crop_container(){
+  return container()
+}
 
 function update_crop_position(event) {
   event.stopPropagation();
@@ -23,8 +34,8 @@ function set_current_cursor_position(event) {
 }
 
 function calculate_x_position() {
-  const container_box = crop_container.value.getBoundingClientRect();
-  const crop = crop_window.value;
+  const container_box = crop_container().getBoundingClientRect();
+  const crop = crop_area();
   let page_x = current_cursor_position.value.x;
   let crop_box = crop.getBoundingClientRect();
   const left = crop_box.left - container_box.left;
@@ -76,7 +87,7 @@ function crop_should_not_move_x() {
 }
 
 function cursor_off_limits_left() {
-  const container_box = crop_container.value.getBoundingClientRect();
+  const container_box = crop_container().getBoundingClientRect();
   const x_coordinate = current_cursor_position.value.x;
   const page_x = drag_is_happening()
     ? x_coordinate
@@ -85,7 +96,7 @@ function cursor_off_limits_left() {
 }
 
 function cursor_off_limits_right() {
-  const container_box = crop_container.value.getBoundingClientRect();
+  const container_box = crop_container().getBoundingClientRect();
   const x_coordinate = current_cursor_position.value.x;
   const page_x = drag_is_happening()
     ? x_coordinate
@@ -94,8 +105,8 @@ function cursor_off_limits_right() {
 }
 
 function calculate_y_position() {
-  const container_box = crop_container.value.getBoundingClientRect();
-  const crop = crop_window.value;
+  const container_box = crop_container().getBoundingClientRect();
+  const crop = crop_area();
   let page_y = current_cursor_position.value.y;
   let crop_box = crop.getBoundingClientRect();
   const top = crop_box.top - container_box.top;
@@ -148,7 +159,7 @@ function crop_should_not_move_y() {
 
 function cursor_off_limits_top() {
   const y_coordinate = current_cursor_position.value.y;
-  const container_box = crop_container.value.getBoundingClientRect();
+  const container_box = crop_container().getBoundingClientRect();
   const page_y = drag_is_happening()
     ? y_coordinate
     : last_cursor_position.value.y;
@@ -157,7 +168,7 @@ function cursor_off_limits_top() {
 
 function cursor_off_limits_bottom() {
   const y_coordinate = current_cursor_position.value.y;
-  const container_box = crop_container.value.getBoundingClientRect();
+  const container_box = crop_container().getBoundingClientRect();
   const page_y = drag_is_happening()
     ? y_coordinate
     : last_cursor_position.value.y;
@@ -176,11 +187,10 @@ function calculate_opacity_position() {
 }
 
 function calculate_opacity_top_position() {
-  const container_box = crop_container.value.getBoundingClientRect();
-  const crop = crop_window.value;
-  const opacity_top = document.querySelector("#opacity-top");
+  const container_box = crop_container().getBoundingClientRect();
+  const crop = crop_area();
   const crop_box = crop.getBoundingClientRect();
-  const style = opacity_top.style;
+  const style = opacity_top().style;
 
   style.left = crop.style.left;
   style.width = Math.abs(container_box.right - crop_box.left).toString() + "px";
@@ -188,11 +198,10 @@ function calculate_opacity_top_position() {
 }
 
 function calculate_opacity_right_position() {
-  const container_box = crop_container.value.getBoundingClientRect();
-  const crop = crop_window.value;
-  const opacity_right = document.querySelector("#opacity-right");
+  const container_box = crop_container().getBoundingClientRect();
+  const crop = crop_area();
   const crop_box = crop.getBoundingClientRect();
-  const style = opacity_right.style;
+  const style = opacity_right().style;
 
   style.top = crop.style.top;
   style.width =
@@ -202,11 +211,10 @@ function calculate_opacity_right_position() {
 }
 
 function calculate_opacity_bottom_position() {
-  const container_box = crop_container.value.getBoundingClientRect();
-  const crop = crop_window.value;
-  const opacity_bottom = document.querySelector("#opacity-bottom");
+  const container_box = crop_container().getBoundingClientRect();
+  const crop = crop_area();
   const crop_box = crop.getBoundingClientRect();
-  const style = opacity_bottom.style;
+  const style = opacity_bottom().style;
 
   style.top = crop_box.bottom - container_box.top;
   style.width = Math.abs(crop_box.right - container_box.left).toString() + "px";
@@ -215,11 +223,10 @@ function calculate_opacity_bottom_position() {
 }
 
 function calculate_opacity_left_position() {
-  const container_box = crop_container.value.getBoundingClientRect();
-  const crop = crop_window.value;
-  const opacity_left = document.querySelector("#opacity-left");
+  const container_box = crop_container().getBoundingClientRect();
+  const crop = crop_area();
   const crop_box = crop.getBoundingClientRect();
-  const style = opacity_left.style;
+  const style = opacity_left().style;
 
   style.left = container_box.left;
   style.width = Math.abs(crop_box.left - container_box.left).toString() + "px";
@@ -235,7 +242,7 @@ function finish_drag(event) {
 }
 
 function set_current_resizing_position() {
-  const container_box = crop_container.value.getBoundingClientRect();
+  const container_box = crop_container().getBoundingClientRect();
 
   current_cursor_position.value = {
     x: container_box.left,
@@ -276,9 +283,7 @@ function adjust_component_size() {
   });
 }
 
-function crop_window_setup(container, crop) {
-  crop_container.value = container;
-  crop_window.value = crop;
+function crop_window_setup() {
   calculate_opacity_position();
   add_resize_listener();
 }

@@ -1,5 +1,7 @@
-function convert_background_image_dimensions_to_pixels(background_image,container) {
-  const container_computed_style = getComputedStyle(container);
+import { container } from './general.js'
+
+function convert_background_image_dimensions_to_pixels(background_image) {
+  const container_computed_style = getComputedStyle(container());
   const background_position = container_computed_style.backgroundPosition
   const background_size = container_computed_style.backgroundSize;
   let image_dimensions = null;
@@ -7,13 +9,13 @@ function convert_background_image_dimensions_to_pixels(background_image,containe
   switch (background_size) {
     case "contain":
       image_dimensions =
-        calculate_containing_image_dimensions(background_image,container);
+        calculate_containing_image_dimensions(background_image);
       break;
     case "cover":
-      image_dimensions = calculate_covering_image_dimensions(background_image,container);
+      image_dimensions = calculate_covering_image_dimensions(background_image);
       break;
     default:
-    	if(position_in_pixels(container) && size_in_pixels(container)){
+    	if(position_in_pixels() && size_in_pixels()){
     		image_dimensions = {
     			image_width: parseFloat(background_size.split('px',2).shift().trim()),
     			image_height: parseFloat(background_size.split('px',2).pop().trim()),
@@ -23,7 +25,7 @@ function convert_background_image_dimensions_to_pixels(background_image,containe
     	}
   }
 
-  const style = container.style;
+  const style = container().style;
   const width = image_dimensions.image_width;
   const height = image_dimensions.image_height;
   const distance_top = image_dimensions.top;
@@ -37,24 +39,24 @@ function convert_background_image_dimensions_to_pixels(background_image,containe
   }
 }
 
-function update_background_dimensions(dimensions,container){
+function update_background_dimensions(dimensions){
   const width = dimensions.image_width;
   const height = dimensions.image_height;
   const distance_top = dimensions.top;
   const distance_left = dimensions.left;
-	const style = container.style
+	const style = container().style
 
   style.backgroundSize = `${width}px ${height}px`;
   style.backgroundPosition = `${distance_left}px ${distance_top}px`;
 }
 
-function calculate_covering_image_dimensions(image,container) {
-	const container_box = container.getBoundingClientRect();
-	const container_computed_style = getComputedStyle(container)
+function calculate_covering_image_dimensions(image) {
+	const container_box = container().getBoundingClientRect();
+	const container_computed_style = getComputedStyle(container())
 	const position = container_computed_style.backgroundPosition
 	const size = container_computed_style.backgroundSize
 
-	if(position_in_pixels(container) && size_in_pixels(container)){
+	if(position_in_pixels() && size_in_pixels()){
 		return {
 			image_height: parseFloat(size.split('px',2).pop().trim()),
 			image_width: parseFloat(size.split('px',2).shift().trim()),
@@ -88,13 +90,13 @@ function calculate_covering_image_dimensions(image,container) {
 	}
 }
 
-function calculate_containing_image_dimensions(image,container) {
-	const container_box = container.getBoundingClientRect();
-	const container_computed_style = getComputedStyle(container)
+function calculate_containing_image_dimensions(image) {
+	const container_box = container().getBoundingClientRect();
+	const container_computed_style = getComputedStyle(container())
 	const position = container_computed_style.backgroundPosition
 	const size = container_computed_style.backgroundSize
 
-	if(position_in_pixels(container) && size_in_pixels(container)){
+	if(position_in_pixels() && size_in_pixels()){
 		return {
 			image_height: parseFloat(size.split('px',2).pop().trim()),
 			image_width: parseFloat(size.split('px',2).shift().trim()),
@@ -128,14 +130,14 @@ function calculate_containing_image_dimensions(image,container) {
 	}
 }
 
-function position_in_pixels(container){
-	const container_computed_style = getComputedStyle(container)
+function position_in_pixels(){
+	const container_computed_style = getComputedStyle(container())
 	const position = container_computed_style.backgroundPosition.split('px')
 	return position.length > 1
 }
 
-function size_in_pixels(container){
-	const container_computed_style = getComputedStyle(container)
+function size_in_pixels(){
+	const container_computed_style = getComputedStyle(container())
 	const size = container_computed_style.backgroundSize.split('px')
 	return size.length > 1	
 }

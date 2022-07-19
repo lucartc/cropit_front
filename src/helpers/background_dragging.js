@@ -5,13 +5,16 @@ import {
 
 import { ref } from "vue";
 
-import { cursor_is_not_at_screen_origin, hide_ghost } from "./general.js";
+import { cursor_is_not_at_screen_origin, hide_ghost, container } from "./general.js";
 
 const initial_position = ref(null);
-const background_container = ref(null);
+
+function background_container(){
+  return container()
+}
 
 function background_drag(event) {
-  const container_computed_style = getComputedStyle(background_container.value);
+  const container_computed_style = getComputedStyle(background_container());
   const cursor_position = {
     x: event.pageX,
     y: event.pageY,
@@ -20,7 +23,7 @@ function background_drag(event) {
   if (initial_position.value != null) {
     move_background_image(cursor_position);
   } else {
-    const container_box = background_container.value.getBoundingClientRect();
+    const container_box = background_container().getBoundingClientRect();
 
     initial_position.value = {
       x: cursor_position.x - container_box.left,
@@ -32,10 +35,10 @@ function background_drag(event) {
 function move_background_image(cursor_position) {
   if (cursor_is_not_at_screen_origin(cursor_position)) {
     const container_computed_style = getComputedStyle(
-      background_container.value
+      background_container()
     );
-    const container_box = background_container.value.getBoundingClientRect();
-    const style = background_container.value.style;
+    const container_box = background_container().getBoundingClientRect();
+    const style = background_container().style;
     const position = {
       x: parseFloat(
         container_computed_style.backgroundPosition
@@ -64,8 +67,7 @@ function move_background_image(cursor_position) {
   }
 }
 
-function start_background_dragging(event, container) {
-  background_container.value = container;
+function start_background_dragging(event) {
   hide_ghost(event);
 }
 

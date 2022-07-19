@@ -7,16 +7,20 @@ import {
   update_background_dimensions
 } from "./background_image_dimensions.js";
 
+import { container } from './general.js'
+
 const image_current_position = ref(null);
 const image_current_size = ref(null);
 const zoom_percentage = 5;
-const zoom_container = ref(null);
 
-function zoom(cursor_absolute_position, container, in_out) {
-  const container_computed_style = getComputedStyle(container);
+function zoom_container(){
+  return container()
+}
+
+function zoom(cursor_absolute_position,in_out) {
+  const container_computed_style = getComputedStyle(zoom_container());
   const image_size = container_computed_style.backgroundSize;
   const image_position = container_computed_style.backgroundPosition;
-  zoom_container.value = container;
 
   image_current_size.value = {
     x: parseFloat(image_size.split('px',2).shift().trim()),
@@ -46,7 +50,7 @@ function calculate_zooming(cursor_absolute_position, in_out) {
     y: resized_dimensions.top,
   };
 
-  const style = zoom_container.value.style;
+  const style = zoom_container().style;
   const new_width = resized_dimensions.image_width;
   const new_height = resized_dimensions.image_height;
   const new_distance_top = resized_dimensions.top;
@@ -56,17 +60,17 @@ function calculate_zooming(cursor_absolute_position, in_out) {
 }
 
 function resize_dimensions(cursor_absolute_position, in_out) {
-  const container_box = zoom_container.value.getBoundingClientRect();
+  const container_box = zoom_container().getBoundingClientRect();
 
   image_current_position.value = {
     x: parseFloat(
-      zoom_container.value.style.backgroundPosition
+      zoom_container().style.backgroundPosition
         .split("px", 2)
         .shift()
         .trim()
     ),
     y: parseFloat(
-      zoom_container.value.style.backgroundPosition.split("px", 2).pop().trim()
+      zoom_container().style.backgroundPosition.split("px", 2).pop().trim()
     ),
   };
 

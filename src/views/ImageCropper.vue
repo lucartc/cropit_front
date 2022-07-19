@@ -1,11 +1,14 @@
 <script setup>
 import { ref, computed, defineProps, onMounted, onUnmounted, watch, nextTick } from "vue";
+
 import {
   convert_background_image_dimensions_to_pixels,
   update_background_dimensions
 } from '../helpers/background_image_dimensions.js'
 
 import { zoom } from "../helpers/zooming.js";
+
+import { container, crop_area } from '../helpers/general.js'
 
 import {
 	start_background_dragging,
@@ -31,8 +34,8 @@ const container_height = ref(props.container_height);
 const container_background_image = ref(props.container_background_image);
 const image_natural_width = ref(null);
 const image_natural_height = ref(null);
-const crop_container = ref(null);
-const crop_window = ref(null);
+const container_element = ref(null);
+const crop_element = ref(null);
 const is_image_loaded = ref(false);
 
 const container_style = computed(() => {
@@ -40,7 +43,7 @@ const container_style = computed(() => {
     width: props.container_width,
     height: props.container_height,
     aspectRatio: props.container_aspect_ratio,
-    backgroundImage: "url(" + props.container_background_image + ")",
+    backgroundImage: "url(" + props.container_background_image + ")"
   };
 });
 
@@ -62,9 +65,9 @@ const props = defineProps({
   container_background_image: { type: String, default: "url('/flower.jpeg')" },
 });
 
-watch([crop_window,crop_container],(current,previous) => {
+watch([crop_element,container_element],(current,previous) => {
   if(current.shift() != null && current.shift() != null){
-    crop_window_setup(crop_container.value,crop_window.value)
+    crop_window_setup()
   }
 })
 
@@ -77,54 +80,45 @@ function set_image_dimensions() {
   image_natural_height.value = natural_height;
   image.addEventListener('load',() => {
     let loaded_image = event.target
-    console.log('loaded...')
     is_image_loaded.value = true
     nextTick(() => {
-      console.log(crop_container.value)
       let dimensions = convert_background_image_dimensions_to_pixels(
-        loaded_image,
-        crop_container.value
+        loaded_image
       )
-
-      update_background_dimensions(dimensions,crop_container.value)
+      update_background_dimensions(dimensions)
     })
   })
 }
 
 function change_zoom(event) {
-  const container = document.querySelector("#image-cropper");
   const cursor_position = {
     x: event.pageX,
     y: event.pageY,
   };
   if (event.deltaY > 0) {
-    zoom(cursor_position, container, "out");
+    zoom(cursor_position,"out");
   } else {
-    zoom(cursor_position, container, "in");
+    zoom(cursor_position,"in");
   }
   event.preventDefault();
 }
 
 function zooming_in() {
-  const container = document.querySelector("#image-cropper");
-  const crop = document.querySelector("#crop-window");
-  const crop_box = crop.getBoundingClientRect();
+  const crop_box = crop_area().getBoundingClientRect();
   const cursor_position = {
     x: crop_box.left + crop_box.width / 2,
     y: crop_box.top + crop_box.height / 2,
   };
-  zoom(cursor_position, container, "in");
+  zoom(cursor_position,"in");
 }
 
 function zooming_out() {
-  const container = document.querySelector("#image-cropper");
-  const crop = document.querySelector("#crop-window");
-  const crop_box = crop.getBoundingClientRect();
+  const crop_box = crop_area().getBoundingClientRect();
   const cursor_position = {
     x: crop_box.left + crop_box.width / 2,
     y: crop_box.top + crop_box.height / 2,
   };
-  zoom(cursor_position, container, "out");
+  zoom(cursor_position,"out");
 }
 
 onMounted(() => {
@@ -138,24 +132,24 @@ onUnmounted(() => {
 
 <template>
   <main
+    ref="container_element"
     v-if="is_image_loaded"
-  	ref="crop_container"
     @wheel="change_zoom"
     @drag="background_drag"
-    @dragstart="start_background_dragging($event,crop_container)"
+    @dragstart="start_background_dragging"
     @dragend="finish_background_dragging"
     :style="container_style"
-    id="image-cropper"
+    id="crop-container"
     draggable="true"
   >
     <div
-    	ref="crop_window"
+      ref="crop_element"
       :style="draggable_style"
       @mousedown="set_cursor_position"
       @dragstart="start_drag"
       @dragend="finish_drag"
       @drag="update_crop_position"
-      id="crop-window"
+      id="crop-area"
       draggable="true"
     ></div>
     <div id="opacity-top"></div>
@@ -184,7 +178,7 @@ onUnmounted(() => {
   background-color: cornflowerblue;
 }
 
-#image-cropper {
+#crop-container {
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
@@ -195,7 +189,7 @@ onUnmounted(() => {
   position: relative;
   background-color: #cccccc;
 
-  #crop-window {
+  #crop-area {
     z-index: 3;
     text-align: center;
     display: flex;
