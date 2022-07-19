@@ -1,6 +1,11 @@
 <script setup>
 import ImageCropper from "./ImageCropper.vue";
-import { ref, reactive, computed, watch, onUpdated } from "vue";
+import { ref, reactive, computed, watch, onUpdated, nextTick } from "vue";
+import { crop } from '../helpers/cropping.js'
+
+import {
+  crop_window_setup,
+} from "../helpers/crop_window.js";
 
 const current_image_index = ref(-1);
 const width = ref(1);
@@ -9,6 +14,7 @@ const example_json = ref('# Example: {"ratios": [{"width": 1,"height": 1}]}');
 const image_object_src = ref(null);
 const json_string = ref("");
 const json_error_message = ref("JSON is not valid!");
+const cropped_images = ref([])
 
 const image_cropper_props = reactive({
   container_width: "",
@@ -18,6 +24,7 @@ const image_cropper_props = reactive({
   draggable_height: "",
   draggable_aspect_ratio: "1",
   container_background_image: "",
+  container_visibility: "visible"
 });
 
 const aspect_ratios = computed(() => {
@@ -52,6 +59,10 @@ watch(aspect_ratios, () => {
 watch(current_image_index, () => {
   update_active_aspect_ratio();
 });
+
+watch(cropped_images.value,() => {
+  render_cropped_images()
+})
 
 function json_invalid() {
   return json_error.value;
@@ -145,7 +156,11 @@ function toggle_json_textarea() {
   }
 }
 
-function toggle_help() {
+async function toggle_help() {
+  toggle_image_cropper_visibility()
+
+  await nextTick()
+
   const help = document.querySelector("#left");
   const middle = document.querySelector("#middle");
   const right = document.querySelector("#right");
@@ -158,6 +173,18 @@ function toggle_help() {
     help.style.display = "";
     middle.className = "middle-big";
     right.className = "right-big";
+  }
+
+  toggle_image_cropper_visibility()
+
+  await nextTick()
+}
+
+function toggle_image_cropper_visibility(){
+  if(image_cropper_props.container_visibility == 'invisible'){
+    image_cropper_props.container_visibility = 'visible'
+  }else{
+    image_cropper_props.container_visibility = 'invisible'
   }
 }
 
@@ -246,6 +273,48 @@ function clear_image() {
   image_object_src.value = null;
 }
 
+function crop_image() {
+  let new_crop = crop()
+  store_cropped_image(new_crop)
+}
+
+function store_cropped_image(image){
+  cropped_images.value.push(image)
+}
+
+function render_cropped_images(){
+  remove_cropped_images()
+  let images = cropped_images.value
+  images.forEach((image) => {
+    let cropped_images_container = document.querySelector('#cropped-images-carroussel')
+    let element = create_cropped_image_element(image)
+    cropped_images_container.appendChild(element)
+  })
+  crop_window_setup()
+}
+
+function remove_cropped_images(){
+  let cropped_images_container = document.querySelector('#cropped-images-carroussel')
+  let children = Array.from(cropped_images_container.children)
+  children.forEach((child) => {
+    cropped_images_container.removeChild(child)
+  })
+}
+
+function create_cropped_image_element(image){
+  let div = document.createElement('div')
+  let container_height = 50
+  let container_width = 50 * (image.container_width / image.container_height)
+  div.className = 'cropped-image'
+  div.style.height = `${container_height}px`
+  div.style.width = `${container_width}px`
+  div.style.backgroundImage = `url("${image.source}")`
+  div.style.backgroundRepeat= 'no-repeat'
+  div.style.backgroundSize = `${image.width * (container_width/image.container_width)}px ${image.height * (container_height/image.container_height)}px`
+  div.style.backgroundPosition = `${image.left * (container_width/image.container_width)}px ${image.top * (container_height/image.container_height)}px`
+  return div
+}
+
 onUpdated(() => {
   update_active_aspect_ratio();
 });
@@ -299,7 +368,7 @@ onUpdated(() => {
           <img id="clear-icon" src="/remove.svg" />
           <div class="tooltip">Reset image</div>
         </button>
-        <button v-if="image_object_src" @click="take_snapshot" id="crop">
+        <button @click="crop_image" v-if="image_object_src" id="crop">
           <img id="crop-icon" src="/crop.svg" />
           <div class="tooltip">Crop image</div>
         </button>
@@ -307,6 +376,8 @@ onUpdated(() => {
           <img id="help-icon" src="/help.svg" />
           <div class="tooltip">Toggle help</div>
         </button>
+      </div>
+      <div id="cropped-images-carroussel">
       </div>
     </div>
     <div id="right" class="right-big">
@@ -536,6 +607,49 @@ onUpdated(() => {
         aspect-ratio: 1;
       }
     }
+
+    #cropped-images-carroussel{
+      margin: 20px 0px 20px 0px;
+      //padding: 0px 60px 0px 60px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      //background-color: #ff3355;
+      max-height: 50px;
+      max-width: 80%;
+      min-height: 5px;
+      min-width: 80%;
+      position: relative;
+      overflow: hidden;
+
+      #carroussel-left{
+        height: 50px;
+        aspect-ratio: 1;
+        //background-color: #ff33ff;
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+
+      #carroussel-right{
+        height: 50px;
+        aspect-ratio: 1;
+        //background-color: #ff33ff;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      .cropped-image{
+        margin: 0px 20px 0px 0px;
+        height: 50px;
+
+        &:last-child{
+          margin: 0px 0px 0px 0px;
+        }
+      }
+    }
   }
 
   .middle-big {
@@ -691,6 +805,7 @@ onUpdated(() => {
       justify-content: start;
       font-size: 1.2em;
       padding: 10px 40px 10px 40px;
+      width: 100%;
 
       #import-json-icon {
         height: 30px;

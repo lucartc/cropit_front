@@ -25,12 +25,6 @@ import {
   update_crop_position,
 } from "../helpers/crop_window.js";
 
-const draggable_aspect_ratio = ref(props.draggable_aspect_ratio);
-const draggable_width = ref(props.draggable_width);
-const draggable_height = ref(props.draggable_height);
-const container_aspect_ratio = ref(props.container_aspect_ratio);
-const container_width = ref(props.container_width);
-const container_height = ref(props.container_height);
 const container_background_image = ref(props.container_background_image);
 const image_natural_width = ref(null);
 const image_natural_height = ref(null);
@@ -38,12 +32,21 @@ const container_element = ref(null);
 const crop_element = ref(null);
 const is_image_loaded = ref(false);
 
+const image_cropper_visibility = computed(() => {
+  return props.container_visibility
+})
+
+const background_image_source = computed(() => {
+  return props.container_background_image
+})
+
 const container_style = computed(() => {
   return {
     width: props.container_width,
     height: props.container_height,
     aspectRatio: props.container_aspect_ratio,
-    backgroundImage: "url(" + props.container_background_image + ")"
+    backgroundImage: "url(" + props.container_background_image + ")",
+    visibility: props.container_visibility
   };
 });
 
@@ -63,7 +66,12 @@ const props = defineProps({
   draggable_height: { type: String, default: "" },
   draggable_aspect_ratio: { type: [String, Number], default: "2 / 1" },
   container_background_image: { type: String, default: "url('/flower.jpeg')" },
+  container_visibility: { type: String }
 });
+
+watch(image_cropper_visibility,() => {
+  crop_window_setup()
+})
 
 watch([crop_element,container_element],(current,previous) => {
   if(current.shift() != null && current.shift() != null){
@@ -73,7 +81,7 @@ watch([crop_element,container_element],(current,previous) => {
 
 function set_image_dimensions() {
   const image = new Image();
-  image.src = container_background_image.value;
+  image.src = background_image_source.value
   const natural_width = image.naturalWidth;
   const natural_height = image.naturalHeight;
   image_natural_width.value = natural_width;
