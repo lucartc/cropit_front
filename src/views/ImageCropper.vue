@@ -1,20 +1,18 @@
 <script setup>
-import { ref, computed, defineProps, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { ref, computed, defineProps, onMounted, onUnmounted, watch } from "vue";
 
-import {
-  convert_background_image_dimensions_to_pixels,
-  update_background_dimensions
-} from '../helpers/background_image_dimensions.js'
+import { convert_background_image_dimensions_to_pixels } from "../helpers/background_image_dimensions.js";
 
 import { zoom } from "../helpers/zooming.js";
 
-import { container, crop_area } from '../helpers/general.js'
+import { crop_area } from "../helpers/general.js";
 
 import {
-	start_background_dragging,
-	background_drag,
-	finish_background_dragging
-} from "../helpers/background_dragging.js"
+  start_background_dragging,
+  background_drag,
+  finish_background_dragging,
+  center_background_image,
+} from "../helpers/background_dragging.js";
 
 import {
   finish_drag,
@@ -25,20 +23,19 @@ import {
   update_crop_position,
 } from "../helpers/crop_window.js";
 
-const container_background_image = ref(props.container_background_image);
 const image_natural_width = ref(null);
 const image_natural_height = ref(null);
 const container_element = ref(null);
 const crop_element = ref(null);
-const is_image_loaded = ref(false);
+const zooming_timeout_id = ref(null);
 
 const image_cropper_visibility = computed(() => {
-  return props.container_visibility
-})
+  return props.container_visibility;
+});
 
 const background_image_source = computed(() => {
-  return props.container_background_image
-})
+  return props.container_background_image;
+});
 
 const container_style = computed(() => {
   return {
@@ -46,7 +43,7 @@ const container_style = computed(() => {
     height: props.container_height,
     aspectRatio: props.container_aspect_ratio,
     backgroundImage: "url(" + props.container_background_image + ")",
-    visibility: props.container_visibility
+    visibility: props.container_visibility,
   };
 });
 
@@ -66,36 +63,27 @@ const props = defineProps({
   draggable_height: { type: String, default: "" },
   draggable_aspect_ratio: { type: [String, Number], default: "2 / 1" },
   container_background_image: { type: String, default: "url('/flower.jpeg')" },
-  container_visibility: { type: String }
+  container_visibility: { type: String },
 });
 
-watch(image_cropper_visibility,() => {
-  crop_window_setup()
-})
+watch(image_cropper_visibility, () => {
+  crop_window_setup();
+});
 
-watch([crop_element,container_element],(current,previous) => {
-  if(current.shift() != null && current.shift() != null){
-    crop_window_setup()
+watch([crop_element, container_element], (current) => {
+  if (current.shift() != null && current.shift() != null) {
+    crop_window_setup();
   }
-})
+});
 
 function set_image_dimensions() {
   const image = new Image();
-  image.src = background_image_source.value
+  image.src = background_image_source.value;
   const natural_width = image.naturalWidth;
   const natural_height = image.naturalHeight;
   image_natural_width.value = natural_width;
   image_natural_height.value = natural_height;
-  image.addEventListener('load',() => {
-    let loaded_image = event.target
-    is_image_loaded.value = true
-    nextTick(() => {
-      let dimensions = convert_background_image_dimensions_to_pixels(
-        loaded_image
-      )
-      update_background_dimensions(dimensions)
-    })
-  })
+  convert_background_image_dimensions_to_pixels();
 }
 
 function change_zoom(event) {
@@ -104,9 +92,9 @@ function change_zoom(event) {
     y: event.pageY,
   };
   if (event.deltaY > 0) {
-    zoom(cursor_position,"out");
+    zoom(cursor_position, "out");
   } else {
-    zoom(cursor_position,"in");
+    zoom(cursor_position, "in");
   }
   event.preventDefault();
 }
@@ -117,7 +105,7 @@ function zooming_in() {
     x: crop_box.left + crop_box.width / 2,
     y: crop_box.top + crop_box.height / 2,
   };
-  zoom(cursor_position,"in");
+  zoom(cursor_position, "in");
 }
 
 function zooming_out() {
@@ -126,7 +114,27 @@ function zooming_out() {
     x: crop_box.left + crop_box.width / 2,
     y: crop_box.top + crop_box.height / 2,
   };
-  zoom(cursor_position,"out");
+  zoom(cursor_position, "out");
+}
+
+function keep_zooming_in() {
+  zooming_in();
+  const id = setTimeout(keep_zooming_in, 50);
+  zooming_timeout_id.value = id;
+}
+
+function stop_zooming_in() {
+  clearTimeout(zooming_timeout_id.value);
+}
+
+function keep_zooming_out() {
+  zooming_out();
+  const id = setTimeout(keep_zooming_out, 50);
+  zooming_timeout_id.value = id;
+}
+
+function stop_zooming_out() {
+  clearTimeout(zooming_timeout_id.value);
 }
 
 onMounted(() => {
@@ -141,7 +149,6 @@ onUnmounted(() => {
 <template>
   <main
     ref="container_element"
-    v-if="is_image_loaded"
     @wheel="change_zoom"
     @drag="background_drag"
     @dragstart="start_background_dragging"
@@ -164,12 +171,25 @@ onUnmounted(() => {
     <div id="opacity-bottom"></div>
     <div id="opacity-left"></div>
     <div id="opacity-right"></div>
-    <div id="zoom-controls">
-      <button @click="zooming_in" id="zoom-in-button">
-        <img id="zoom-in" src="/add.svg" />
+    <div id="crop-controls">
+      <button
+        @mousedown="keep_zooming_in"
+        @mouseup="stop_zooming_in"
+        @mouseout="stop_zooming_in"
+        id="zoom-in-button"
+      >
+        <img id="zoom-in" src="/zoom_plus.svg" />
       </button>
-      <button @click="zooming_out" id="zoom-out-button">
-        <img id="zoom-out" src="/minus.svg" />
+      <button
+        @mousedown="keep_zooming_out"
+        @mouseup="stop_zooming_out"
+        @mouseout="stop_zooming_out"
+        id="zoom-out-button"
+      >
+        <img id="zoom-out" src="/zoom_minus.svg" />
+      </button>
+      <button id="home-button">
+        <img @click="center_background_image" id="home" src="/home.svg" />
       </button>
     </div>
   </main>
@@ -249,8 +269,9 @@ onUnmounted(() => {
     height: 100px;
   }
 
-  #zoom-controls {
-    right: -60px;
+  #crop-controls {
+    top: 10px;
+    right: 10px;
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -258,29 +279,55 @@ onUnmounted(() => {
     justify-content: center;
 
     #zoom-in-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       border: none;
       border-radius: 5px 5px 0px 0px;
-      background-color: #333333;
-      width: 50px;
+      background-color: #ff3355;
+      width: 30px;
       aspect-ratio: 1;
       #zoom-in {
-        width: 30px;
+        width: 18px;
         aspect-ratio: 1;
       }
     }
 
     #zoom-out-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       margin: 5px 0px 0px 0px;
       border: none;
       border-radius: 0px 0px 5px 5px;
-      background-color: #333333;
-      width: 50px;
+      background-color: #ff3355;
+      width: 30px;
       aspect-ratio: 1;
 
       #zoom-out {
-        width: 30px;
+        width: 18px;
         aspect-ratio: 1;
       }
+    }
+  }
+
+  #home-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 5px 0px 0px 0px;
+    border: none;
+    border-radius: 5px 5px 5px 5px;
+    background-color: #ff3355;
+    width: 30px;
+    aspect-ratio: 1;
+
+    #home {
+      width: 18px;
+      aspect-ratio: 1;
     }
   }
 }

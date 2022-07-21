@@ -1,20 +1,20 @@
-import {
-  convert_background_image_dimensions_to_pixels,
-  update_background_dimensions
-} from "./background_image_dimensions.js";
-
 import { ref } from "vue";
 
-import { cursor_is_not_at_screen_origin, hide_ghost, container } from "./general.js";
+import {
+  cursor_is_not_at_screen_origin,
+  hide_ghost,
+  container,
+  background_image_size_in_pixels,
+  background_image_position_in_pixels,
+} from "./general.js";
 
 const initial_position = ref(null);
 
-function background_container(){
-  return container()
+function background_container() {
+  return container();
 }
 
 function background_drag(event) {
-  const container_computed_style = getComputedStyle(background_container());
   const cursor_position = {
     x: event.pageX,
     y: event.pageY,
@@ -33,10 +33,12 @@ function background_drag(event) {
 }
 
 function move_background_image(cursor_position) {
-  if (cursor_is_not_at_screen_origin(cursor_position)) {
-    const container_computed_style = getComputedStyle(
-      background_container()
-    );
+  if (
+    cursor_is_not_at_screen_origin(cursor_position) &&
+    background_image_position_in_pixels() &&
+    background_image_size_in_pixels()
+  ) {
+    const container_computed_style = getComputedStyle(background_container());
     const container_box = background_container().getBoundingClientRect();
     const style = background_container().style;
     const position = {
@@ -53,8 +55,10 @@ function move_background_image(cursor_position) {
 
     const distance_x =
       cursor_position.x - container_box.left - initial_position.value.x;
+
     const distance_y =
       cursor_position.y - container_box.top - initial_position.value.y;
+
     const new_position_x = position.x + distance_x;
     const new_position_y = position.y + distance_y;
 
@@ -64,6 +68,27 @@ function move_background_image(cursor_position) {
       x: cursor_position.x - container_box.left,
       y: cursor_position.y - container_box.top,
     };
+  }
+}
+
+function center_background_image() {
+  if (
+    background_image_size_in_pixels() &&
+    background_image_position_in_pixels()
+  ) {
+    const container_box = background_container().getBoundingClientRect();
+    const container_style = getComputedStyle(background_container());
+    const background_size = container_style.backgroundSize;
+
+    const image_size = {
+      width: parseFloat(background_size.split("px", 2).shift().trim()),
+      height: parseFloat(background_size.split("px", 2).pop().trim()),
+    };
+
+    const left = (container_box.width - image_size.width) / 2;
+    const top = (container_box.height - image_size.height) / 2;
+
+    background_container().style.backgroundPosition = `${left}px ${top}px`;
   }
 }
 
@@ -79,4 +104,5 @@ export {
   background_drag,
   start_background_dragging,
   finish_background_dragging,
+  center_background_image,
 };

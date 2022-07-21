@@ -1,38 +1,40 @@
-import {
-  ref
-} from "vue";
+import { ref } from "vue";
 
 import {
-  convert_background_image_dimensions_to_pixels,
-  update_background_dimensions
-} from "./background_image_dimensions.js";
-
-import { container } from './general.js'
+  container,
+  background_image_size_in_pixels,
+  background_image_position_in_pixels,
+} from "./general.js";
 
 const image_current_position = ref(null);
 const image_current_size = ref(null);
 const zoom_percentage = 5;
 
-function zoom_container(){
-  return container()
+function zoom_container() {
+  return container();
 }
 
-function zoom(cursor_absolute_position,in_out) {
-  const container_computed_style = getComputedStyle(zoom_container());
-  const image_size = container_computed_style.backgroundSize;
-  const image_position = container_computed_style.backgroundPosition;
+function zoom(cursor_absolute_position, in_out) {
+  if (
+    background_image_size_in_pixels() &&
+    background_image_position_in_pixels()
+  ) {
+    const container_computed_style = getComputedStyle(zoom_container());
+    const image_size = container_computed_style.backgroundSize;
+    const image_position = container_computed_style.backgroundPosition;
 
-  image_current_size.value = {
-    x: parseFloat(image_size.split('px',2).shift().trim()),
-    y: parseFloat(image_size.split('px',2).pop().trim())
-  };
+    image_current_size.value = {
+      x: parseFloat(image_size.split("px", 2).shift().trim()),
+      y: parseFloat(image_size.split("px", 2).pop().trim()),
+    };
 
-  image_current_position.value = {
-    x: parseFloat(image_position.split('px',2).shift().trim()),
-    y: parseFloat(image_position.split('px',2).pop().trim())
-  };
-  
-  calculate_zooming(cursor_absolute_position, in_out);
+    image_current_position.value = {
+      x: parseFloat(image_position.split("px", 2).shift().trim()),
+      y: parseFloat(image_position.split("px", 2).pop().trim()),
+    };
+
+    calculate_zooming(cursor_absolute_position, in_out);
+  }
 }
 
 function calculate_zooming(cursor_absolute_position, in_out) {
@@ -64,10 +66,7 @@ function resize_dimensions(cursor_absolute_position, in_out) {
 
   image_current_position.value = {
     x: parseFloat(
-      zoom_container().style.backgroundPosition
-        .split("px", 2)
-        .shift()
-        .trim()
+      zoom_container().style.backgroundPosition.split("px", 2).shift().trim()
     ),
     y: parseFloat(
       zoom_container().style.backgroundPosition.split("px", 2).pop().trim()

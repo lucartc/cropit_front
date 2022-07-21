@@ -8,7 +8,7 @@ import {
   opacity_top,
   opacity_right,
   opacity_bottom,
-  opacity_left
+  opacity_left,
 } from "./general.js";
 
 const last_cursor_position = ref(null);
@@ -16,8 +16,8 @@ const current_cursor_position = ref(null);
 const drag_started = ref(false);
 const drag_finished = ref(false);
 
-function crop_container(){
-  return container()
+function crop_container() {
+  return container();
 }
 
 function update_crop_position(event) {
