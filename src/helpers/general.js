@@ -45,6 +45,57 @@ function background_image_size_in_pixels() {
   return size.length > 1;
 }
 
+function download_images(cropped_images){
+
+  let sources = new Set()
+
+  cropped_images.forEach((crop) => {
+    sources.add(crop.source)
+  })
+
+  sources = Array.from(sources)
+
+  sources.forEach(source => {
+    let source_file = new FileReader()
+    source_file.addEventListener('loadend',() => {
+      let crops = cropped_images.filter((img) => img.source === source )
+      crops = crops.map(crop => {
+        return {
+          container_width: crop.container_width,
+          container_height: crop.container_height,
+          image_width: crop.width,
+          image_height: crop.height,
+          top: crop.top,
+          left: crop.left
+        }
+      })
+
+      const message = JSON.stringify({
+        image_content: source_file.result,
+        cropped_images: crops
+      })
+
+      fetch('http://api.cropit.jlucartc.tech/download',{
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: message
+      })
+      .then(data => data.blob())
+      .then(data => URL.createObjectURL(data))
+      .then(data => {
+        const download_link = document.createElement('a')
+        download_link.href = data
+        download_link.download = 'images.zip'
+        download_link.click()
+      })
+    })
+
+    fetch(source)
+    .then(data => data.blob())
+    .then(data => source_file.readAsDataURL(data))
+  })
+}
+
 export {
   cursor_is_not_at_screen_origin,
   hide_ghost,
@@ -56,4 +107,5 @@ export {
   opacity_left,
   background_image_size_in_pixels,
   background_image_position_in_pixels,
+  download_images
 };

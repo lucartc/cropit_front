@@ -11,3 +11,4 @@
 	- When image surpasses right and is to the left of cursor, the staggering appears
 - Fix ImageCropper opacity resizing when help is toggled - OK
 - Add screenshot functionality - OK
+- Add cropped images download - OK

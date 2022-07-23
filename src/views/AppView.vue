@@ -2,7 +2,7 @@
 import ImageCropper from "./ImageCropper.vue";
 import { ref, reactive, computed, watch, onUpdated, nextTick } from "vue";
 import { crop } from "../helpers/cropping.js";
-
+import { download_images } from '../helpers/general.js'
 import { crop_window_setup } from "../helpers/crop_window.js";
 
 const current_image_index = ref(-1);
@@ -405,7 +405,7 @@ onUpdated(() => {
           <img id="next-icon" src="/right.svg" />
           <div class="tooltip">Move carroussel right</div>
         </button>
-        <button id="download-images">
+        <button @click="download_images(cropped_images)" id="download-images">
           <img id="download-icon" src="/download.svg" />
           <div class="tooltip">Download cropped images</div>
         </button>
