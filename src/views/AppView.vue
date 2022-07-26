@@ -336,7 +336,6 @@ function create_cropped_image_element(image) {
   const div = document.createElement("div");
   const container_height = 40;
   const container_width = 40 * (image.crop_window_width / image.crop_window_height);
-  div.className = "cropped-image";
   div.style.height = `${container_height}px`;
   div.style.width = `${container_width}px`;
   div.style.backgroundImage = `url("${image.source}")`;

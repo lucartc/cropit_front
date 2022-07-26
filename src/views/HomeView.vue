@@ -88,7 +88,7 @@ function go_to_app() {
       max-width: 80%;
       border-radius: 10px;
       padding: 20px 40px 20px 40px;
-      margin: 60px 0px 0px 0px;
+      margin: 60px 0px 20px 0px;
       border: none;
       font-size: 2em;
       font-weight: bold;

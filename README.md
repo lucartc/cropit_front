@@ -12,3 +12,8 @@
 - Fix ImageCropper opacity resizing when help is toggled - OK
 - Add screenshot functionality - OK
 - Add cropped images download - OK
+- Fix problem happening when image has more than one aspect ratio crop
+- Add remove button to crop images
+- Add tooltips to image cropper window controls
+- Make new animation for landing page
+- Add link to github
