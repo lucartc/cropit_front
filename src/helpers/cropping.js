@@ -36,8 +36,8 @@ function crop() {
       height: parseFloat(image_size.split("px", 2).pop().trim()),
       top: new_image_position.y,
       left: new_image_position.x,
-      container_width: crop_box.width,
-      container_height: crop_box.height,
+      crop_window_width: crop_box.width,
+      crop_window_height: crop_box.height,
       source: image_source.replace('url("', "").replace('")', ""),
     };
   }

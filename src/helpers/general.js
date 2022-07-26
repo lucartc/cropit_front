@@ -45,8 +45,7 @@ function background_image_size_in_pixels() {
   return size.length > 1;
 }
 
-function download_images(cropped_images){
-
+async function download_images(cropped_images){
   let sources = new Set()
 
   cropped_images.forEach((crop) => {
@@ -55,44 +54,50 @@ function download_images(cropped_images){
 
   sources = Array.from(sources)
 
-  sources.forEach(source => {
-    let source_file = new FileReader()
-    source_file.addEventListener('loadend',() => {
-      let crops = cropped_images.filter((img) => img.source === source )
-      crops = crops.map(crop => {
-        return {
-          container_width: crop.container_width,
-          container_height: crop.container_height,
-          image_width: crop.width,
-          image_height: crop.height,
-          top: crop.top,
-          left: crop.left
-        }
-      })
-
-      const message = JSON.stringify({
-        image_content: source_file.result,
-        cropped_images: crops
-      })
-
-      fetch('http://api.cropit.jlucartc.tech/download',{
-        method: 'post',
-        headers: {'Content-Type': 'application/json'},
-        body: message
-      })
-      .then(data => data.blob())
-      .then(data => URL.createObjectURL(data))
-      .then(data => {
-        const download_link = document.createElement('a')
-        download_link.href = data
-        download_link.download = 'images.zip'
-        download_link.click()
-      })
+  await Promise.all(sources
+    .map(source => fetch(source)
+                   .then(data => data.blob())
+                   .then(async function(data){
+                      const file = new FileReader()
+                      await new Promise((res,err) => {
+                        file.onload = res
+                        file.onerror = err
+                        file.readAsDataURL(data)
+                      })
+                      return file
+                   })
+                   .then(file => {
+                      const response = {};
+                      response[source] = file.result.replace(/data:.+;base64,/,'');
+                      return response
+                    })
+    ))
+  .then(data => {
+    data = data.reduce((sum,item) => {
+      for(let property in item){
+        sum[property] = item[property]
+        return sum
+      }
     })
 
-    fetch(source)
+    const message = JSON.stringify({
+      sources: data,
+      cropped_images: cropped_images 
+    })
+
+    fetch('http://api.cropit.jlucartc.tech/download',{
+      method: 'post',
+      headers: {'Content-Type':'application/json'},
+      body: message
+    })
     .then(data => data.blob())
-    .then(data => source_file.readAsDataURL(data))
+    .then(data => URL.createObjectURL(data))
+    .then(url => {
+      let download_link = document.createElement('a')
+      download_link.href = url
+      download_link.download = 'images.zip'
+      download_link.click()
+    })
   })
 }
 

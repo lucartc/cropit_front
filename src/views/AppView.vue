@@ -335,18 +335,18 @@ function remove_cropped_images() {
 function create_cropped_image_element(image) {
   const div = document.createElement("div");
   const container_height = 40;
-  const container_width = 40 * (image.container_width / image.container_height);
+  const container_width = 40 * (image.crop_window_width / image.crop_window_height);
   div.className = "cropped-image";
   div.style.height = `${container_height}px`;
   div.style.width = `${container_width}px`;
   div.style.backgroundImage = `url("${image.source}")`;
   div.style.backgroundRepeat = "no-repeat";
   div.style.backgroundSize = `${
-    image.width * (container_width / image.container_width)
-  }px ${image.height * (container_height / image.container_height)}px`;
+    image.width * (container_width / image.crop_window_width)
+  }px ${image.height * (container_height / image.crop_window_height)}px`;
   div.style.backgroundPosition = `${
-    image.left * (container_width / image.container_width)
-  }px ${image.top * (container_height / image.container_height)}px`;
+    image.left * (container_width / image.crop_window_width)
+  }px ${image.top * (container_height / image.crop_window_height)}px`;
   div.style.borderRadius = "5px";
   div.style.margin = "0px 10px 0px 0px";
   div.style.boxShadow = "1px 1px 4px 0px #999999";
