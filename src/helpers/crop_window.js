@@ -9,6 +9,8 @@ import {
   opacity_right,
   opacity_bottom,
   opacity_left,
+  container_is_present,
+  crop_area_is_present
 } from "./general.js";
 
 const last_cursor_position = ref(null);
@@ -22,10 +24,12 @@ function crop_container() {
 
 function update_crop_position(event) {
   event.stopPropagation();
-  set_current_cursor_position(event);
-  calculate_x_position();
-  calculate_y_position();
-  calculate_opacity_position();
+  if(container_is_present() && crop_area_is_present()){
+    set_current_cursor_position(event);
+    calculate_x_position();
+    calculate_y_position();
+    calculate_opacity_position();
+  }
 }
 
 function set_current_cursor_position(event) {
@@ -180,10 +184,12 @@ function drag_is_happening() {
 }
 
 function calculate_opacity_position() {
-  calculate_opacity_top_position();
-  calculate_opacity_right_position();
-  calculate_opacity_bottom_position();
-  calculate_opacity_left_position();
+  if(container_is_present() && crop_area_is_present()){
+    calculate_opacity_top_position();
+    calculate_opacity_right_position();
+    calculate_opacity_bottom_position();
+    calculate_opacity_left_position();
+  }
 }
 
 function calculate_opacity_top_position() {
@@ -285,6 +291,7 @@ function adjust_component_size() {
 
 function crop_window_setup() {
   calculate_opacity_position();
+  remove_resize_listener();
   add_resize_listener();
 }
 

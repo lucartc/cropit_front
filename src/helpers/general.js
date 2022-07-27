@@ -20,6 +20,14 @@ function crop_area() {
   return document.querySelector("#crop-area");
 }
 
+function container_is_present(){
+  return container() != null
+}
+
+function crop_area_is_present(){
+  return crop_area() != null
+}
+
 function opacity_top() {
   return document.querySelector("#opacity-top");
 }
@@ -112,5 +120,7 @@ export {
   opacity_left,
   background_image_size_in_pixels,
   background_image_position_in_pixels,
-  download_images
+  download_images,
+  container_is_present,
+  crop_area_is_present
 };

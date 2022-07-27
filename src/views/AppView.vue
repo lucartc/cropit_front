@@ -310,19 +310,35 @@ function store_cropped_image(image) {
 }
 
 function render_cropped_images() {
-  remove_cropped_images();
+  remove_all_cropped_images();
   const images = cropped_images.value;
-  images.forEach((image) => {
+  images.forEach((image,index) => {
     const cropped_images_container = document.querySelector(
       "#cropped-images-carroussel"
     );
-    const element = create_cropped_image_element(image);
+    const element = create_cropped_image_element(image,index);
+    add_component_data_property(element,cropped_images_container);
     cropped_images_container.appendChild(element);
   });
   crop_window_setup();
 }
 
-function remove_cropped_images() {
+function add_component_data_property(element,parent){
+  let properties = Array.from(parent.attributes)
+  properties = properties.map(item => item.name)
+  
+  const data_property = properties
+                        .filter(item => item.match(/^data-.+$/))
+                        .pop()
+                        .split('data-')
+                        .pop()
+
+  const children = Array.from(element.children)
+  children.forEach(child => child.dataset[data_property] = '')
+  element.dataset[data_property] = ''
+}
+
+function remove_all_cropped_images() {
   const cropped_images_container = document.querySelector(
     "#cropped-images-carroussel"
   );
@@ -332,24 +348,32 @@ function remove_cropped_images() {
   });
 }
 
-function create_cropped_image_element(image) {
+function create_cropped_image_element(image,index) {
+  const remove_element = document.createElement("div")
+  remove_element.className = "remove_cropped_image"
   const div = document.createElement("div");
   const container_height = 40;
-  const container_width = 40 * (image.crop_window_width / image.crop_window_height);
-  div.style.height = `${container_height}px`;
-  div.style.width = `${container_width}px`;
+  const container_width = container_height * (image.crop_window_width / image.crop_window_height);
+  div.id = `cropped_image_${index}`
+  div.className = "cropped-image"
+  div.style.width = `${container_width}px`
   div.style.backgroundImage = `url("${image.source}")`;
-  div.style.backgroundRepeat = "no-repeat";
   div.style.backgroundSize = `${
-    image.width * (container_width / image.crop_window_width)
+     image.width * (container_width / image.crop_window_width)
   }px ${image.height * (container_height / image.crop_window_height)}px`;
   div.style.backgroundPosition = `${
-    image.left * (container_width / image.crop_window_width)
+     image.left * (container_width / image.crop_window_width)
   }px ${image.top * (container_height / image.crop_window_height)}px`;
-  div.style.borderRadius = "5px";
-  div.style.margin = "0px 10px 0px 0px";
-  div.style.boxShadow = "1px 1px 4px 0px #999999";
+  div.addEventListener('click',remove_cropped_image)
+  div.appendChild(remove_element)
   return div;
+}
+
+function remove_cropped_image(event){
+  const parent = event.target.parentElement
+  const id = parseInt(parent.id.split('_').pop())
+  cropped_images.value.splice(id,1)
+  render_cropped_images()
 }
 
 onUpdated(() => {
@@ -391,6 +415,7 @@ onUpdated(() => {
         <button
           @mousedown="keep_moving_carroussel_left"
           @mouseup="stop_moving_carroussel_left"
+          @mouseout="stop_moving_carroussel_left"
           id="previous"
         >
           <img id="previous-icon" src="/left.svg" />
@@ -399,6 +424,7 @@ onUpdated(() => {
         <button
           @mousedown="keep_moving_carroussel_right"
           @mouseup="stop_moving_carroussel_right"
+          @mouseout="stop_moving_carroussel_right"
           id="next"
         >
           <img id="next-icon" src="/right.svg" />
@@ -516,6 +542,7 @@ onUpdated(() => {
     align-items: center;
     justify-content: start;
     position: relative;
+    overflow: hidden;
 
     #display {
       background-color: #f0e0e0;
@@ -661,6 +688,38 @@ onUpdated(() => {
       min-height: 50px;
       min-width: 100%;
       overflow: hidden;
+
+      .cropped-image{
+        border-radius: 5px;
+        height: 40px;
+        background-repeat: no-repeat;
+        margin: 0px 10px 0px 0px;
+        box-shadow: 1px 1px 4px 0px #999999;
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+
+        .remove_cropped_image{
+          visibility: hidden;
+          width: 80%;
+          height: 80%;
+          position: absolute;
+          background-image: url('/remove.svg');
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+
+        &:hover{
+          opacity: 0.9;
+
+          .remove_cropped_image{
+            visibility: visible;
+          }
+        }
+      }
     }
   }
 
