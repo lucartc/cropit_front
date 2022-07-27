@@ -14,6 +14,7 @@
 - Add cropped images download - OK
 - Fix problem happening when image has more than one aspect ratio crop
 - Add remove button to crop images
-- Add tooltips to image cropper window controls
+- Add tooltips to image cropper window controls - OK
 - Make new animation for landing page
-- Add link to github
+- Add link to github - OK
+- Fix opacity redrawing when new aspect ratio is selected

@@ -515,7 +515,6 @@ onUpdated(() => {
     flex-direction: column;
     align-items: center;
     justify-content: start;
-    overflow: hidden;
     position: relative;
 
     #display {
@@ -637,7 +636,7 @@ onUpdated(() => {
             display: flex;
             top: -60px;
             bottom: auto;
-            animation: present_tooltip 2s;
+            animation: present_tooltip 1.5s;
           }
         }
       }

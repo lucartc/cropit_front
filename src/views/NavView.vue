@@ -14,8 +14,8 @@ function go_to_home() {
       <span id="logo-text">CROP.IT</span>
     </div>
     <div id="navlinks">
-      <span class="navlink"><img src="/github.svg" /></span>
-      <span class="navlink">Donate</span>
+      <a class="navlink" href="https://github.com/jlucartc"><img src="/github.svg" /></a>
+      <a class="navlink">Donate</a>
     </div>
   </nav>
 </template>

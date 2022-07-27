@@ -179,6 +179,7 @@ onUnmounted(() => {
         id="zoom-in-button"
       >
         <img id="zoom-in" src="/zoom_plus.svg" />
+        <div class="tooltip">Zoom in</div>
       </button>
       <button
         @mousedown="keep_zooming_out"
@@ -187,9 +188,13 @@ onUnmounted(() => {
         id="zoom-out-button"
       >
         <img id="zoom-out" src="/zoom_minus.svg" />
+        <div class="tooltip">Zoom out</div>
       </button>
-      <button id="home-button">
-        <img @click="center_background_image" id="home" src="/home.svg" />
+      <button
+        @click="center_background_image"
+        id="home-button">
+        <img id="home" src="/home.svg" />
+        <div class="tooltip">Center image</div>
       </button>
     </div>
   </main>
@@ -288,9 +293,55 @@ onUnmounted(() => {
       background-color: #ff3355;
       width: 30px;
       aspect-ratio: 1;
+      position: relative;
+
       #zoom-in {
         width: 18px;
         aspect-ratio: 1;
+      }
+
+      .tooltip {
+        background-color: #cccccc;
+        border-radius: 5px;
+        bottom: -60px;
+        z-index: 2;
+        position: absolute;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        padding: 5px 10px 5px 10px;
+        font-size: 1em;
+        color: #333333;
+        text-align: center;
+      }
+
+      @keyframes present_tooltip {
+        0% {
+          opacity: 0;
+        }
+
+        30% {
+          opacity: 1;
+        }
+
+        60% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: 0;
+        }
+      }
+
+      &:hover {
+        .tooltip {
+          display: flex;
+          top: -45px;
+          bottom: auto;
+          animation: present_tooltip 1.5s;
+        }
       }
     }
 
@@ -305,10 +356,55 @@ onUnmounted(() => {
       background-color: #ff3355;
       width: 30px;
       aspect-ratio: 1;
+      position: relative;
 
       #zoom-out {
         width: 18px;
         aspect-ratio: 1;
+      }
+
+      .tooltip {
+        background-color: #cccccc;
+        border-radius: 5px;
+        bottom: -60px;
+        z-index: 2;
+        position: absolute;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        padding: 5px 10px 5px 10px;
+        font-size: 1em;
+        color: #333333;
+        text-align: center;
+      }
+
+      @keyframes present_tooltip {
+        0% {
+          opacity: 0;
+        }
+
+        30% {
+          opacity: 1;
+        }
+
+        60% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: 0;
+        }
+      }
+
+      &:hover {
+        .tooltip {
+          display: flex;
+          top: -45px;
+          bottom: auto;
+          animation: present_tooltip 1.5s;
+        }
       }
     }
   }
@@ -324,10 +420,55 @@ onUnmounted(() => {
     background-color: #ff3355;
     width: 30px;
     aspect-ratio: 1;
+    position: relative;
 
     #home {
       width: 18px;
       aspect-ratio: 1;
+    }
+
+    .tooltip {
+      background-color: #cccccc;
+      border-radius: 5px;
+      bottom: -60px;
+      z-index: 2;
+      position: absolute;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      padding: 5px 10px 5px 10px;
+      font-size: 1em;
+      color: #333333;
+      text-align: center;
+    }
+
+    @keyframes present_tooltip {
+      0% {
+        opacity: 0;
+      }
+
+      30% {
+        opacity: 1;
+      }
+
+      60% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    &:hover {
+      .tooltip {
+        display: flex;
+        top: -45px;
+        bottom: auto;
+        animation: present_tooltip 1.5s;
+      }
     }
   }
 }
