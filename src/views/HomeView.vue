@@ -11,7 +11,7 @@ function go_to_app() {
 <template>
   <main id="container">
     <div id="left">
-      <header id="header">Keep to what matters the most.</header>
+      <header id="header">Keep what matters the most.</header>
       <p id="subheader">
         Pick the interesting parts of your images using different crop sizes
       </p>

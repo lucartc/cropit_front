@@ -13,8 +13,8 @@
 - Add screenshot functionality - OK
 - Add cropped images download - OK
 - Fix problem happening when image has more than one aspect ratio crop
-- Add remove button to crop images
+- Add remove button to crop images - OK
 - Add tooltips to image cropper window controls - OK
-- Make new animation for landing page
+- Make new animation for landing page - OK
 - Add link to github - OK
 - Fix opacity redrawing when new aspect ratio is selected
