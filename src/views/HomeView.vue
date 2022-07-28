@@ -1908,6 +1908,7 @@ function go_to_app() {
 
 @media screen and (max-width: 960px) {
   #container {
+    margin: 0;
     justify-content: center;
 
     #left {
@@ -1920,6 +1921,10 @@ function go_to_app() {
       #subheader {
         text-align: center;
       }
+    }
+
+    #right{
+      align-items: center;
     }
   }
 }

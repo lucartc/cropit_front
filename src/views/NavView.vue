@@ -62,4 +62,18 @@ function go_to_home() {
     }
   }
 }
+
+@media screen and (max-width: 960px){
+  #navbar{
+    justify-content: space-around;
+
+    #logo-group{
+      margin: 30px 0px 30px 0px;
+    }
+
+    #navlinks{
+      margin: 30px 0px 30px 0px;
+    }
+  }
+}
 </style>

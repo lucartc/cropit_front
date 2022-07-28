@@ -700,6 +700,7 @@ onUpdated(() => {
         flex-direction: row;
         align-items: center;
         justify-content: center;
+        background-color: #aaaaaa;
 
         .remove_cropped_image{
           visibility: hidden;
@@ -713,7 +714,7 @@ onUpdated(() => {
         }
 
         &:hover{
-          opacity: 0.9;
+          filter: grayscale(50%);
 
           .remove_cropped_image{
             visibility: visible;
