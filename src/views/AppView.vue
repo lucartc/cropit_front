@@ -584,6 +584,11 @@ onUpdated(() => {
           left: calc(50% - 116px);
           right: auto;
           font-size: 1.2em;
+          box-shadow: 2px 2px 4px 0px rgba(#000000,0.25);
+
+          &:hover{
+            background-color: #ff3377;
+          }
 
           #import-image-icon {
             margin: 0px 10px 0px 0px;
@@ -617,6 +622,11 @@ onUpdated(() => {
         border: none;
         background-color: #ff3355;
         margin: 0px 10px 0px 0px;
+        box-shadow: 2px 2px 4px 0px rgba(#000000,0.25);
+
+        &:hover{
+          background-color: #ff3377;
+        }
 
         &:last-child {
           margin: 0px 0px 0px auto;
@@ -754,6 +764,12 @@ onUpdated(() => {
       font-size: 1.2em;
       padding: 10px 40px 10px 40px;
       width: 100%;
+      box-shadow: 2px 2px 4px 0px rgba(#000000,0.25);
+
+      &:hover{
+        background-color: #ff3377;
+      }
+
 
       #add-aspect-ratio-icon {
         height: 30px;
@@ -797,7 +813,12 @@ onUpdated(() => {
         border: none;
         height: 40px;
         aspect-ratio: 1;
-        background-color: #44dd44;
+        background-color: #44cc44;
+        box-shadow: 1px 1px 2px 0px rgba(#000000,0.25);
+
+        &:hover{
+          background-color: #44dd44;
+        }
       }
     }
 
@@ -881,6 +902,11 @@ onUpdated(() => {
       font-size: 1.2em;
       padding: 10px 40px 10px 40px;
       width: 100%;
+      box-shadow: 2px 2px 4px 0px rgba(#000000,0.25);
+
+      &:hover{
+        background-color: #ff3377;
+      }
 
       #import-json-icon {
         height: 30px;
