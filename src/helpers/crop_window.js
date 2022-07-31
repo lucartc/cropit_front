@@ -5,10 +5,6 @@ import {
   hide_ghost,
   container,
   crop_area,
-  opacity_top,
-  opacity_right,
-  opacity_bottom,
-  opacity_left,
   container_is_present,
   crop_area_is_present
 } from "./general.js";
@@ -17,6 +13,19 @@ const last_cursor_position = ref(null);
 const current_cursor_position = ref(null);
 const drag_started = ref(false);
 const drag_finished = ref(false);
+
+function opacity_top() {
+  return document.querySelector("#opacity-top");
+}
+function opacity_right() {
+  return document.querySelector("#opacity-right");
+}
+function opacity_bottom() {
+  return document.querySelector("#opacity-bottom");
+}
+function opacity_left() {
+  return document.querySelector("#opacity-left");
+}
 
 function crop_container() {
   return container();

@@ -1,8 +1,7 @@
 import {
   container,
   crop_area,
-  background_image_size_in_pixels,
-  background_image_position_in_pixels,
+  is_image_ready
 } from "./general.js";
 
 function crop_container() {
@@ -11,8 +10,7 @@ function crop_container() {
 
 function crop() {
   if (
-    background_image_size_in_pixels() &&
-    background_image_position_in_pixels()
+    is_image_ready()
   ) {
     const container_box = crop_container().getBoundingClientRect();
     const crop_box = crop_area().getBoundingClientRect();

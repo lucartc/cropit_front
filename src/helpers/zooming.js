@@ -2,8 +2,7 @@ import { ref } from "vue";
 
 import {
   container,
-  background_image_size_in_pixels,
-  background_image_position_in_pixels,
+  is_image_ready
 } from "./general.js";
 
 const image_current_position = ref(null);
@@ -16,8 +15,7 @@ function zoom_container() {
 
 function zoom(cursor_absolute_position, in_out) {
   if (
-    background_image_size_in_pixels() &&
-    background_image_position_in_pixels()
+    is_image_ready()
   ) {
     const container_computed_style = getComputedStyle(zoom_container());
     const image_size = container_computed_style.backgroundSize;

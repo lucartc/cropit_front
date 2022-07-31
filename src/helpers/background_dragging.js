@@ -4,8 +4,7 @@ import {
   cursor_is_not_at_screen_origin,
   hide_ghost,
   container,
-  background_image_size_in_pixels,
-  background_image_position_in_pixels,
+  is_image_ready
 } from "./general.js";
 
 const initial_position = ref(null);
@@ -35,8 +34,7 @@ function background_drag(event) {
 function move_background_image(cursor_position) {
   if (
     cursor_is_not_at_screen_origin(cursor_position) &&
-    background_image_position_in_pixels() &&
-    background_image_size_in_pixels()
+    is_image_ready()
   ) {
     const container_computed_style = getComputedStyle(background_container());
     const container_box = background_container().getBoundingClientRect();
@@ -73,8 +71,7 @@ function move_background_image(cursor_position) {
 
 function center_background_image() {
   if (
-    background_image_size_in_pixels() &&
-    background_image_position_in_pixels()
+    is_image_ready()
   ) {
     const container_box = background_container().getBoundingClientRect();
     const container_style = getComputedStyle(background_container());
