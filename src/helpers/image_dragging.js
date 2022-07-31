@@ -9,20 +9,20 @@ import {
 
 const initial_position = ref(null);
 
-function background_container() {
+function image_container() {
   return container();
 }
 
-function background_drag(event) {
+function image_drag(event) {
   const cursor_position = {
     x: event.pageX,
     y: event.pageY,
   };
 
   if (initial_position.value != null) {
-    move_background_image(cursor_position);
+    move_image(cursor_position);
   } else {
-    const container_box = background_container().getBoundingClientRect();
+    const container_box = image_container().getBoundingClientRect();
 
     initial_position.value = {
       x: cursor_position.x - container_box.left,
@@ -31,14 +31,14 @@ function background_drag(event) {
   }
 }
 
-function move_background_image(cursor_position) {
+function move_image(cursor_position) {
   if (
     cursor_is_not_at_screen_origin(cursor_position) &&
     is_image_ready()
   ) {
-    const container_computed_style = getComputedStyle(background_container());
-    const container_box = background_container().getBoundingClientRect();
-    const style = background_container().style;
+    const container_computed_style = getComputedStyle(image_container());
+    const container_box = image_container().getBoundingClientRect();
+    const style = image_container().style;
     const position = {
       x: parseFloat(
         container_computed_style.backgroundPosition
@@ -69,12 +69,12 @@ function move_background_image(cursor_position) {
   }
 }
 
-function center_background_image() {
+function center_image() {
   if (
     is_image_ready()
   ) {
-    const container_box = background_container().getBoundingClientRect();
-    const container_style = getComputedStyle(background_container());
+    const container_box = image_container().getBoundingClientRect();
+    const container_style = getComputedStyle(image_container());
     const background_size = container_style.backgroundSize;
 
     const image_size = {
@@ -85,21 +85,21 @@ function center_background_image() {
     const left = (container_box.width - image_size.width) / 2;
     const top = (container_box.height - image_size.height) / 2;
 
-    background_container().style.backgroundPosition = `${left}px ${top}px`;
+    image_container().style.backgroundPosition = `${left}px ${top}px`;
   }
 }
 
-function start_background_dragging(event) {
+function start_image_dragging(event) {
   hide_ghost(event);
 }
 
-function finish_background_dragging() {
+function finish_image_dragging() {
   initial_position.value = null;
 }
 
 export {
-  background_drag,
-  start_background_dragging,
-  finish_background_dragging,
-  center_background_image,
+  image_drag,
+  start_image_dragging,
+  finish_image_dragging,
+  center_image
 };

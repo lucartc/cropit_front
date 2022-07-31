@@ -1,18 +1,18 @@
 <script setup>
 import { ref, computed, defineProps, onMounted, onUnmounted, watch } from "vue";
 
-import { convert_background_image_dimensions_to_pixels } from "../helpers/background_image_dimensions.js";
+import { convert_image_dimensions_to_pixels } from "../helpers/image_dimensions.js";
 
 import { zoom } from "../helpers/zooming.js";
 
 import { crop_area } from "../helpers/general.js";
 
 import {
-  start_background_dragging,
-  background_drag,
-  finish_background_dragging,
-  center_background_image,
-} from "../helpers/background_dragging.js";
+  start_image_dragging,
+  image_drag,
+  finish_image_dragging,
+  center_image,
+} from "../helpers/image_dragging.js";
 
 import {
   finish_drag,
@@ -83,7 +83,7 @@ function set_image_dimensions() {
   const natural_height = image.naturalHeight;
   image_natural_width.value = natural_width;
   image_natural_height.value = natural_height;
-  convert_background_image_dimensions_to_pixels();
+  convert_image_dimensions_to_pixels();
 }
 
 function change_zoom(event) {
@@ -150,9 +150,9 @@ onUnmounted(() => {
   <main
     ref="container_element"
     @wheel="change_zoom"
-    @drag="background_drag"
-    @dragstart="start_background_dragging"
-    @dragend="finish_background_dragging"
+    @drag="image_drag"
+    @dragstart="start_image_dragging"
+    @dragend="finish_image_dragging"
     :style="container_style"
     id="crop-container"
     draggable="true"
@@ -191,7 +191,7 @@ onUnmounted(() => {
         <div class="tooltip">Zoom out</div>
       </button>
       <button
-        @click="center_background_image"
+        @click="center_image"
         id="home-button">
         <img id="home" src="/home.svg" />
         <div class="tooltip">Center image</div>

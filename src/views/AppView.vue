@@ -4,7 +4,6 @@ import HelpComponent from "./HelpComponent.vue";
 import { ref, reactive, computed, watch, onUpdated, nextTick } from "vue";
 import { crop } from "../helpers/cropping.js";
 import { download_images } from '../helpers/general.js'
-import { crop_window_setup } from "../helpers/crop_window.js";
 
 const current_image_index = ref(-1);
 const width = ref(1);
@@ -328,7 +327,6 @@ function render_cropped_images() {
     add_component_data_property(element,cropped_images_container);
     cropped_images_container.appendChild(element);
   });
-  crop_window_setup();
 }
 
 function add_component_data_property(element,parent){

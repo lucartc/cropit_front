@@ -1,6 +1,6 @@
 import { container } from "./general.js";
 
-function convert_background_image_dimensions_to_pixels() {
+function convert_image_dimensions_to_pixels() {
   const container_computed_style = getComputedStyle(container());
   const background_size = container_computed_style.backgroundSize;
 
@@ -84,4 +84,4 @@ function image_aspect_ratio(image) {
   return parseFloat(width) / parseFloat(height);
 }
 
-export { convert_background_image_dimensions_to_pixels };
+export { convert_image_dimensions_to_pixels };

@@ -41,7 +41,7 @@ function is_image_size_in_pixels() {
 }
 
 function is_image_ready(){
-  is_image_size_in_pixels() && is_image_position_in_pixels()
+  return is_image_size_in_pixels() && is_image_position_in_pixels()
 }
 
 async function download_images(cropped_images){
