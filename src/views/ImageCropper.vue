@@ -1,11 +1,13 @@
 <script setup>
-import { ref, computed, defineProps, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, defineProps, onMounted, onUnmounted, watch, defineExpose } from "vue";
 
 import { convert_image_dimensions_to_pixels } from "../helpers/image_dimensions.js";
 
 import { zoom } from "../helpers/zooming.js";
 
 import { crop_area } from "../helpers/general.js";
+
+import { crop, download_cropped_images } from "../helpers/cropping.js"
 
 import {
   start_image_dragging,
@@ -66,6 +68,11 @@ const props = defineProps({
   container_visibility: { type: String },
 });
 
+defineExpose({
+  crop_image,
+  download_images
+})
+
 watch(image_cropper_visibility, () => {
   crop_window_setup();
 });
@@ -75,6 +82,14 @@ watch([crop_element, container_element], (current) => {
     crop_window_setup();
   }
 });
+
+function crop_image(){
+  return crop()
+}
+
+function download_images(images){
+  download_cropped_images(images)
+}
 
 function set_image_dimensions() {
   const image = new Image();

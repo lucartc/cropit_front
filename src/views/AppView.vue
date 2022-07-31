@@ -2,8 +2,6 @@
 import ImageCropper from "./ImageCropper.vue";
 import HelpComponent from "./HelpComponent.vue";
 import { ref, reactive, computed, watch, onUpdated, nextTick } from "vue";
-import { crop } from "../helpers/cropping.js";
-import { download_images } from '../helpers/general.js'
 
 const current_image_index = ref(-1);
 const width = ref(1);
@@ -14,6 +12,7 @@ const json_string = ref("");
 const json_error_message = ref("JSON is not valid!");
 const cropped_images = ref([]);
 const carroussel_timeout_id = ref(null);
+const image_cropper = ref(null);
 
 const image_cropper_props = reactive({
   container_width: "",
@@ -308,7 +307,7 @@ function clear_image() {
 }
 
 function crop_image() {
-  const new_crop = crop();
+  const new_crop = image_cropper.value.crop_image()
   store_cropped_image(new_crop);
 }
 
@@ -382,6 +381,10 @@ function remove_cropped_image(event){
   render_cropped_images()
 }
 
+function download_images(){
+  image_cropper.value.download_images(cropped_images.value)
+}
+
 onUpdated(() => {
   update_active_aspect_ratio();
 });
@@ -408,7 +411,7 @@ onUpdated(() => {
             <img id="import-image-icon" src="/import.svg" /> Import image
           </button>
         </div>
-        <ImageCropper v-if="image_object_src" v-bind="image_cropper_props" />
+        <ImageCropper v-if="image_object_src" v-bind="image_cropper_props" ref="image_cropper"/>
       </div>
       <div id="button-bar">
         <button
@@ -429,7 +432,7 @@ onUpdated(() => {
           <img id="next-icon" src="/right.svg" />
           <div class="tooltip">Move carroussel right</div>
         </button>
-        <button @click="download_images(cropped_images)" id="download-images">
+        <button @click="download_images" id="download-images">
           <img id="download-icon" src="/download.svg" />
           <div class="tooltip">Download cropped images</div>
         </button>

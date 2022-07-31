@@ -41,4 +41,60 @@ function crop() {
   }
 }
 
-export { crop };
+async function download_cropped_images(cropped_images){
+  let sources = new Set()
+
+  cropped_images.forEach((crop) => {
+    sources.add(crop.source)
+  })
+
+  sources = Array.from(sources)
+
+  await Promise.all(sources
+    .map(source => fetch(source)
+                   .then(data => data.blob())
+                   .then(async function(data){
+                      const file = new FileReader()
+                      await new Promise((res,err) => {
+                        file.onload = res
+                        file.onerror = err
+                        file.readAsDataURL(data)
+                      })
+                      return file
+                   })
+                   .then(file => {
+                      const response = {};
+                      response[source] = file.result.replace(/data:.+;base64,/,'');
+                      return response
+                    })
+    ))
+  .then(data => {
+    data = data.reduce((sum,item) => {
+      for(let property in item){
+        sum[property] = item[property]
+        return sum
+      }
+    })
+
+    const message = JSON.stringify({
+      sources: data,
+      cropped_images: cropped_images 
+    })
+
+    fetch('http://api.cropit.jlucartc.tech/download',{
+      method: 'post',
+      headers: {'Content-Type':'application/json'},
+      body: message
+    })
+    .then(data => data.blob())
+    .then(data => URL.createObjectURL(data))
+    .then(url => {
+      let download_link = document.createElement('a')
+      download_link.href = url
+      download_link.download = 'images.zip'
+      download_link.click()
+    })
+  })
+}
+
+export { crop, download_cropped_images };
