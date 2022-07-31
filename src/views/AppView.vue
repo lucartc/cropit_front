@@ -1,5 +1,6 @@
 <script setup>
 import ImageCropper from "./ImageCropper.vue";
+import HelpComponent from "./HelpComponent.vue";
 import { ref, reactive, computed, watch, onUpdated, nextTick } from "vue";
 import { crop } from "../helpers/cropping.js";
 import { download_images } from '../helpers/general.js'
@@ -160,16 +161,23 @@ async function toggle_help() {
 
   await nextTick();
 
-  const help = document.querySelector("#left");
+  const navbar = document.querySelector("#navbar");
+  const left = document.querySelector("#left");
   const middle = document.querySelector("#middle");
   const right = document.querySelector("#right");
 
-  if (help.style.display == "") {
-    help.style.display = "flex";
+  if (left.style.display == "") {
+    navbar.style.filter = "blur(5px)";
+    middle.style.filter = "blur(5px)";
+    right.style.filter = "blur(5px)";
+    left.style.display = "flex";
     middle.className = "middle-small";
     right.className = "right-small";
   } else {
-    help.style.display = "";
+    navbar.style.filter = "";
+    middle.style.filter = "";
+    right.style.filter = "";
+    left.style.display = "";
     middle.className = "middle-big";
     right.className = "right-big";
   }
@@ -384,14 +392,7 @@ onUpdated(() => {
 <template>
   <main id="container">
     <div id="left">
-      <span id="help-title">How to use</span>
-      <p id="help-text">
-        Click in the central button “import your image” to select the desired
-        image. Then, you may add each aspect ratio by clicking in “Add aspect
-        ratio” or you can add them all by importing the adequate JSON containing
-        all the aspect ratios. If you want more advanced uses, with more than
-        one image at a time, checkout out API.
-      </p>
+      <HelpComponent/>
     </div>
     <div id="middle" class="middle-big">
       <div id="display">
@@ -442,10 +443,6 @@ onUpdated(() => {
           <img id="crop-icon" src="/crop.svg" />
           <div class="tooltip">Crop image</div>
         </button>
-        <button @click="toggle_help" id="help">
-          <img id="help-icon" src="/help.svg" />
-          <div class="tooltip">Toggle help</div>
-        </button>
       </div>
       <div id="cropped-images-carroussel"></div>
     </div>
@@ -492,16 +489,6 @@ onUpdated(() => {
           />
         </div>
       </div>
-      <button @click="toggle_json_textarea" id="import-json">
-        <img id="import-json-icon" src="/import.svg" />Import JSON
-      </button>
-      <label v-if="json_error" id="json-error">{{ json_error_message }}</label>
-      <textarea
-        v-model="json_string"
-        :class="textarea_class"
-        id="json-container"
-        :placeholder="example_json"
-      ></textarea>
     </div>
   </main>
 </template>
@@ -629,8 +616,8 @@ onUpdated(() => {
         }
 
         &:last-child {
-          margin: 0px 0px 0px auto;
-          border-radius: 50%;
+          //margin: 0px 0px 0px auto;
+          //border-radius: 50%;
         }
 
         .tooltip {

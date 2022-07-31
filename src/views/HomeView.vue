@@ -19,8 +19,6 @@ function go_to_app() {
     </div>
     <div id="right">
     <svg
-       width="796.92572"
-       height="902.07617"
        viewBox="0 0 210.85326 238.67432"
        version="1.1"
        id="home_animation"
@@ -2599,7 +2597,6 @@ function go_to_app() {
     justify-content: start;
 
     #home_animation{
-      transform: translateY(-160px);
       width: 60%;
 
       #crop_window,#cursor{

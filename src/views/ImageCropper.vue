@@ -234,7 +234,7 @@ onUnmounted(() => {
     cursor: grab;
     position: absolute;
     background-color: transparent;
-    border: 5px solid white;
+    border: 5px solid #ff3355;
     box-sizing: border-box;
   }
 

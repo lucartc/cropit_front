@@ -18,3 +18,5 @@
 - Make new animation for landing page - OK
 - Add link to github - OK
 - Fix opacity redrawing when new aspect ratio is selected
+- Create help component to display help animation
+- Create download modal to wait for download
