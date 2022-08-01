@@ -1,11 +1,9 @@
 <script setup>
-import { ref, computed, defineProps, onMounted, onUnmounted, watch, defineExpose } from "vue";
+import { ref, computed, defineProps, onUnmounted, watch, defineExpose, nextTick } from "vue";
 
 import { convert_image_dimensions_to_pixels } from "../helpers/image_dimensions.js";
 
 import { zoom } from "../helpers/zooming.js";
-
-import { crop_area } from "../helpers/general.js";
 
 import { crop, download_cropped_images } from "../helpers/cropping.js"
 
@@ -30,10 +28,6 @@ const image_natural_height = ref(null);
 const container_element = ref(null);
 const crop_element = ref(null);
 const zooming_timeout_id = ref(null);
-
-const image_cropper_visibility = computed(() => {
-  return props.container_visibility;
-});
 
 const background_image_source = computed(() => {
   return props.container_background_image;
@@ -65,17 +59,24 @@ const props = defineProps({
   draggable_height: { type: String, default: "" },
   draggable_aspect_ratio: { type: [String, Number], default: "2 / 1" },
   container_background_image: { type: String, default: "url('/flower.jpeg')" },
-  container_visibility: { type: String },
 });
 
 defineExpose({
   crop_image,
-  download_images
+  download_images,
+  show,
+  hide
 })
 
-watch(image_cropper_visibility, () => {
-  crop_window_setup();
-});
+watch(background_image_source,async function(current){
+  if(current == null){
+    clear_container_background()
+    crop_window_teardown()
+  }else{
+    crop_window_setup();
+    set_image_dimensions();
+  }
+})
 
 watch([crop_element, container_element], (current) => {
   if (current.shift() != null && current.shift() != null) {
@@ -83,15 +84,32 @@ watch([crop_element, container_element], (current) => {
   }
 });
 
+function show(){
+  const style = container_element.value.style
+  style.display = 'flex'
+}
+
+function hide(){
+  const style = container_element.value.style
+  style.display = 'none' 
+}
+
+function clear_container_background(){
+  const style = container_element.value.style
+  style.backgroundPosition = ""
+  style.backgroundSize = ""
+}
+
 function crop_image(){
   return crop()
 }
 
 function download_images(images){
-  download_cropped_images(images)
+  return download_cropped_images(images)
 }
 
-function set_image_dimensions() {
+async function set_image_dimensions() {
+  await nextTick()
   const image = new Image();
   image.src = background_image_source.value;
   const natural_width = image.naturalWidth;
@@ -115,7 +133,7 @@ function change_zoom(event) {
 }
 
 function zooming_in() {
-  const crop_box = crop_area().getBoundingClientRect();
+  const crop_box = crop_element.value.getBoundingClientRect();
   const cursor_position = {
     x: crop_box.left + crop_box.width / 2,
     y: crop_box.top + crop_box.height / 2,
@@ -124,7 +142,7 @@ function zooming_in() {
 }
 
 function zooming_out() {
-  const crop_box = crop_area().getBoundingClientRect();
+  const crop_box = crop_element.value.getBoundingClientRect();
   const cursor_position = {
     x: crop_box.left + crop_box.width / 2,
     y: crop_box.top + crop_box.height / 2,
@@ -151,10 +169,6 @@ function keep_zooming_out() {
 function stop_zooming_out() {
   clearTimeout(zooming_timeout_id.value);
 }
-
-onMounted(() => {
-  set_image_dimensions();
-});
 
 onUnmounted(() => {
   crop_window_teardown();
@@ -216,17 +230,8 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
-#second {
-  z-index: 0;
-  position: absolute;
-  left: 0px;
-  width: 200px;
-  height: 100px;
-  top: 0px;
-  background-color: cornflowerblue;
-}
-
 #crop-container {
+  box-sizing: border-box;
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
@@ -238,7 +243,6 @@ onUnmounted(() => {
   background-color: #cccccc;
 
   #crop-area {
-    z-index: 3;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -254,21 +258,17 @@ onUnmounted(() => {
   }
 
   #opacity-top {
-    inset: 0 auto auto 0;
-    position: absolute;
-    background-color: #000000;
-    opacity: 0.7;
-    width: 200px;
-    height: 0px;
-  }
-
-  #opacity-right {
     inset: 0 0 auto auto;
     position: absolute;
     background-color: #000000;
     opacity: 0.7;
-    width: 300px;
-    height: 500px;
+  }
+
+  #opacity-right {
+    inset: auto 0 0 auto;
+    position: absolute;
+    background-color: #000000;
+    opacity: 0.7;
   }
 
   #opacity-bottom {
@@ -276,8 +276,6 @@ onUnmounted(() => {
     position: absolute;
     background-color: #000000;
     opacity: 0.7;
-    width: 200px;
-    height: 400px;
   }
 
   #opacity-left {
@@ -285,8 +283,6 @@ onUnmounted(() => {
     position: absolute;
     background-color: #000000;
     opacity: 0.7;
-    width: 0px;
-    height: 100px;
   }
 
   #crop-controls {
@@ -318,8 +314,8 @@ onUnmounted(() => {
       .tooltip {
         background-color: #cccccc;
         border-radius: 5px;
-        bottom: -60px;
-        z-index: 2;
+        bottom: 0px;
+        left: -80px;
         position: absolute;
         display: none;
         flex-direction: column;
@@ -353,8 +349,6 @@ onUnmounted(() => {
       &:hover {
         .tooltip {
           display: flex;
-          top: -45px;
-          bottom: auto;
           animation: present_tooltip 1.5s;
         }
       }
@@ -381,8 +375,8 @@ onUnmounted(() => {
       .tooltip {
         background-color: #cccccc;
         border-radius: 5px;
-        bottom: -60px;
-        z-index: 2;
+        bottom: 0px;
+        left: -90px;
         position: absolute;
         display: none;
         flex-direction: column;
@@ -416,75 +410,72 @@ onUnmounted(() => {
       &:hover {
         .tooltip {
           display: flex;
-          top: -45px;
-          bottom: auto;
+          animation: present_tooltip 1.5s;
+        }
+      }
+    }
+
+    #home-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 5px 0px 0px 0px;
+      border: none;
+      border-radius: 5px 5px 5px 5px;
+      background-color: #ff3355;
+      width: 30px;
+      aspect-ratio: 1;
+      position: relative;
+
+      #home {
+        width: 18px;
+        aspect-ratio: 1;
+      }
+
+      .tooltip {
+        background-color: #cccccc;
+        border-radius: 5px;
+        bottom: 0px;
+        left: -110px;
+        position: absolute;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        padding: 5px 10px 5px 10px;
+        font-size: 1em;
+        color: #333333;
+        text-align: center;
+      }
+
+      @keyframes present_tooltip {
+        0% {
+          opacity: 0;
+        }
+
+        30% {
+          opacity: 1;
+        }
+
+        60% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: 0;
+        }
+      }
+
+      &:hover {
+        .tooltip {
+          display: flex;
           animation: present_tooltip 1.5s;
         }
       }
     }
   }
 
-  #home-button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 5px 0px 0px 0px;
-    border: none;
-    border-radius: 5px 5px 5px 5px;
-    background-color: #ff3355;
-    width: 30px;
-    aspect-ratio: 1;
-    position: relative;
-
-    #home {
-      width: 18px;
-      aspect-ratio: 1;
-    }
-
-    .tooltip {
-      background-color: #cccccc;
-      border-radius: 5px;
-      bottom: -60px;
-      z-index: 2;
-      position: absolute;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      padding: 5px 10px 5px 10px;
-      font-size: 1em;
-      color: #333333;
-      text-align: center;
-    }
-
-    @keyframes present_tooltip {
-      0% {
-        opacity: 0;
-      }
-
-      30% {
-        opacity: 1;
-      }
-
-      60% {
-        opacity: 1;
-      }
-
-      100% {
-        opacity: 0;
-      }
-    }
-
-    &:hover {
-      .tooltip {
-        display: flex;
-        top: -45px;
-        bottom: auto;
-        animation: present_tooltip 1.5s;
-      }
-    }
-  }
 }
 </style>

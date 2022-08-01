@@ -50,7 +50,7 @@ async function download_cropped_images(cropped_images){
 
   sources = Array.from(sources)
 
-  await Promise.all(sources
+  const result = await Promise.all(sources
     .map(source => fetch(source)
                    .then(data => data.blob())
                    .then(async function(data){
@@ -95,6 +95,8 @@ async function download_cropped_images(cropped_images){
       download_link.click()
     })
   })
+
+  return result
 }
 
 export { crop, download_cropped_images };

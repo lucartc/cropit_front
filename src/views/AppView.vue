@@ -1,7 +1,8 @@
 <script setup>
 import ImageCropper from "./ImageCropper.vue";
 import HelpComponent from "./HelpComponent.vue";
-import { ref, reactive, computed, watch, onUpdated, nextTick } from "vue";
+import WaitComponent from "./WaitComponent.vue";
+import { ref, reactive, computed, watch, onUpdated } from "vue";
 
 const current_image_index = ref(-1);
 const width = ref(1);
@@ -13,6 +14,7 @@ const json_error_message = ref("JSON is not valid!");
 const cropped_images = ref([]);
 const carroussel_timeout_id = ref(null);
 const image_cropper = ref(null);
+const spinner = ref(null);
 
 const image_cropper_props = reactive({
   container_width: "",
@@ -21,8 +23,7 @@ const image_cropper_props = reactive({
   draggable_width: "20%",
   draggable_height: "",
   draggable_aspect_ratio: "1",
-  container_background_image: "",
-  container_visibility: "visible",
+  container_background_image: ""
 });
 
 const aspect_ratios = computed(() => {
@@ -154,45 +155,6 @@ function toggle_json_textarea() {
   }
 }
 
-async function toggle_help() {
-  toggle_image_cropper_visibility();
-
-  await nextTick();
-
-  const navbar = document.querySelector("#navbar");
-  const left = document.querySelector("#left");
-  const middle = document.querySelector("#middle");
-  const right = document.querySelector("#right");
-
-  if (left.style.display == "") {
-    navbar.style.filter = "blur(5px)";
-    middle.style.filter = "blur(5px)";
-    right.style.filter = "blur(5px)";
-    left.style.display = "flex";
-    middle.className = "middle-small";
-    right.className = "right-small";
-  } else {
-    navbar.style.filter = "";
-    middle.style.filter = "";
-    right.style.filter = "";
-    left.style.display = "";
-    middle.className = "middle-big";
-    right.className = "right-big";
-  }
-
-  toggle_image_cropper_visibility();
-
-  await nextTick();
-}
-
-function toggle_image_cropper_visibility() {
-  if (image_cropper_props.container_visibility == "invisible") {
-    image_cropper_props.container_visibility = "visible";
-  } else {
-    image_cropper_props.container_visibility = "invisible";
-  }
-}
-
 function import_image() {
   const image_picker = document.querySelector("#import-image-input");
   image_picker.click();
@@ -202,6 +164,7 @@ function set_image_object(event) {
   const image = Array.from(event.target.files).pop();
   image_object_src.value = URL.createObjectURL(image);
   image_cropper_props.container_background_image = image_object_src.value;
+  image_cropper.value.show()
 }
 
 function add_aspect_ratio() {
@@ -302,6 +265,7 @@ function display_aspect_ratio(event) {
 }
 
 function clear_image() {
+  image_cropper.value.hide()
   image_cropper_props.container_background_image = null;
   image_object_src.value = null;
 }
@@ -347,6 +311,7 @@ function remove_all_cropped_images() {
   const cropped_images_container = document.querySelector(
     "#cropped-images-carroussel"
   );
+
   const children = Array.from(cropped_images_container.children);
   children.forEach((child) => {
     cropped_images_container.removeChild(child);
@@ -381,8 +346,20 @@ function remove_cropped_image(event){
   render_cropped_images()
 }
 
-function download_images(){
+async function download_images(){
+  start_spinner()
   image_cropper.value.download_images(cropped_images.value)
+  .then(data => {
+    setTimeout(stop_spinner,2000)
+  })
+}
+
+function start_spinner(){
+  spinner.value.show()
+}
+
+function stop_spinner(){
+  spinner.value.hide()
 }
 
 onUpdated(() => {
@@ -392,12 +369,10 @@ onUpdated(() => {
 
 <template>
   <main id="container">
-    <div id="left">
-      <HelpComponent/>
-    </div>
+    <WaitComponent ref="spinner"/>
     <div id="middle" class="middle-big">
       <div id="display">
-        <div id="current-image" v-if="!image_object_src">
+        <div id="image" v-if="!image_object_src">
           <form hidden>
             <input
               @change="set_image_object"
@@ -411,7 +386,7 @@ onUpdated(() => {
             <img id="import-image-icon" src="/import.svg" /> Import image
           </button>
         </div>
-        <ImageCropper v-if="image_object_src" v-bind="image_cropper_props" ref="image_cropper"/>
+        <ImageCropper v-bind="image_cropper_props" ref="image_cropper"/>
       </div>
       <div id="button-bar">
         <button
@@ -505,24 +480,6 @@ onUpdated(() => {
   align-items: start;
   justify-content: center;
 
-  #left {
-    margin: 20px 20px 0px 40px;
-    display: none;
-    flex-direction: column;
-    align-items: start;
-    justify-content: start;
-    max-width: 30%;
-    min-width: 30%;
-
-    #help-title {
-      font-size: 1.5em;
-    }
-
-    #help-text {
-      line-height: 1.5;
-    }
-  }
-
   #middle {
     margin: 20px 20px 0px 20px;
     display: flex;
@@ -530,10 +487,10 @@ onUpdated(() => {
     align-items: center;
     justify-content: start;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible;
 
     #display {
-      background-color: #f0e0e0;
       margin: 0px 0px 20px 0px;
       display: flex;
       flex-direction: row;
@@ -544,9 +501,8 @@ onUpdated(() => {
       max-width: 100%;
       position: relative;
 
-      #current-image {
+      #image {
         border-radius: 5px;
-        z-index: 1;
         background-color: #aaaaaa;
         max-height: 100%;
         max-width: 100%;
@@ -566,11 +522,8 @@ onUpdated(() => {
           align-items: center;
           justify-content: center;
           position: absolute;
-          z-index: 2;
           top: calc(50% - 25px);
-          bottom: auto;
           left: calc(50% - 116px);
-          right: auto;
           font-size: 1.2em;
           box-shadow: 2px 2px 4px 0px rgba(#000000,0.25);
 
@@ -625,7 +578,6 @@ onUpdated(() => {
           background-color: #cccccc;
           border-radius: 5px;
           bottom: -60px;
-          z-index: 2;
           position: absolute;
           display: none;
           flex-direction: column;
@@ -685,7 +637,6 @@ onUpdated(() => {
       max-height: 50px;
       min-height: 50px;
       min-width: 100%;
-      overflow: hidden;
 
       .cropped-image{
         border-radius: 5px;
@@ -942,12 +893,6 @@ onUpdated(() => {
   #container {
     margin: 40px 0px 20px 0px;
     align-items: center;
-
-    #left {
-      min-width: 80%;
-      max-width: 80%;
-      margin: 20px 20px 0px 20px;
-    }
 
     #middle {
       margin: 20px 20px 0px 20px;

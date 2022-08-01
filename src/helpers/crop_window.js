@@ -207,7 +207,6 @@ function calculate_opacity_top_position() {
   const crop_box = crop.getBoundingClientRect();
   const style = opacity_top().style;
 
-  style.left = crop.style.left;
   style.width = Math.abs(container_box.right - crop_box.left).toString() + "px";
   style.height = Math.abs(crop_box.top - container_box.top).toString() + "px";
 }
@@ -218,7 +217,6 @@ function calculate_opacity_right_position() {
   const crop_box = crop.getBoundingClientRect();
   const style = opacity_right().style;
 
-  style.top = crop.style.top;
   style.width =
     Math.abs(container_box.right - crop_box.right).toString() + "px";
   style.height =
@@ -231,7 +229,6 @@ function calculate_opacity_bottom_position() {
   const crop_box = crop.getBoundingClientRect();
   const style = opacity_bottom().style;
 
-  style.top = crop_box.bottom - container_box.top;
   style.width = Math.abs(crop_box.right - container_box.left).toString() + "px";
   style.height =
     Math.abs(container_box.bottom - crop_box.bottom).toString() + "px";
@@ -243,7 +240,6 @@ function calculate_opacity_left_position() {
   const crop_box = crop.getBoundingClientRect();
   const style = opacity_left().style;
 
-  style.left = container_box.left;
   style.width = Math.abs(crop_box.left - container_box.left).toString() + "px";
   style.height =
     Math.abs(crop_box.bottom - container_box.top).toString() + "px";

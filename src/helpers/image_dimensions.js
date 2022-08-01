@@ -52,8 +52,8 @@ function convert_containing_image_dimensions_to_pixels() {
   const container_computed_style = getComputedStyle(container());
 
   image.src = container_computed_style.backgroundImage
-    .replace('url("', "")
-    .replace('")', "");
+  .replace('url("', "")
+  .replace('")', "");
 
   image.addEventListener("load", () => {
     const container_area = container_box.width * container_box.height;

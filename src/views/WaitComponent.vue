@@ -1,9 +1,26 @@
 <script setup>
+
+	import { ref,defineExpose } from 'vue'
+
+	const modal = ref(null)
+
+	defineExpose({
+		show,
+		hide
+	})
+
+	function show(){
+		modal.value.style.display = "flex";
+	}
 	
+	function hide(){
+		modal.value.style.display = "none";
+	}
+
 </script>
 
 <template>
-	<div id="wait-modal">
+	<div id="wait-modal" ref="modal">
 	<svg
 	   viewBox="0 0 533.44956 408.02483"
 	   version="1.1"
@@ -116,7 +133,8 @@
 
 <style lang="scss" scoped>
 	#wait-modal{
-		display: flex;
+		display: none;
+		//visibility: hidden;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
@@ -125,7 +143,8 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		background-color: rgba(#cccccc,0.3);
+		z-index: 1;
+		background-color: rgba(#ffffff,0.7);
 		backdrop-filter: blur(4px);
 
 		#wait_image{
