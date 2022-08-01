@@ -352,6 +352,9 @@ async function download_images(){
   .then(data => {
     setTimeout(stop_spinner,2000)
   })
+  .catch(data => {
+    setTimeout(stop_spinner,2000)
+  })
 }
 
 function start_spinner(){

@@ -20,3 +20,4 @@
 - Fix opacity redrawing when new aspect ratio is selected
 - Create help component to display help animation
 - Create download modal to wait for download - OK
+- Fix: when aspect ratios are removed, crop area is not returning to 1:1
