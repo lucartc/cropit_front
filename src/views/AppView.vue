@@ -326,6 +326,7 @@ function create_cropped_image_element(image,index) {
   const container_width = container_height * (image.crop_window_width / image.crop_window_height);
   div.id = `cropped_image_${index}`
   div.className = "cropped-image"
+  div.style.height = `${container_height}px`
   div.style.width = `${container_width}px`
   div.style.backgroundImage = `url("${image.source}")`;
   div.style.backgroundSize = `${
@@ -410,7 +411,7 @@ onUpdated(() => {
           <img id="next-icon" src="/right.svg" />
           <div class="tooltip">Move carroussel right</div>
         </button>
-        <button @click="download_images" id="download-images">
+        <button @click="download_images" id="download-images" :disabled="cropped_images.length <= 0">
           <img id="download-icon" src="/download.svg" />
           <div class="tooltip">Download cropped images</div>
         </button>
@@ -643,7 +644,6 @@ onUpdated(() => {
 
       .cropped-image{
         border-radius: 5px;
-        height: 40px;
         background-repeat: no-repeat;
         margin: 0px 10px 0px 0px;
         box-shadow: 1px 1px 4px 0px #999999;
