@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, defineProps, onUnmounted, watch, defineExpose, nextTick } from "vue";
+import { ref, computed, onUnmounted, watch, nextTick } from "vue";
 
 import { convert_image_dimensions_to_pixels } from "../helpers/image_dimensions.js";
 
@@ -71,7 +71,6 @@ defineExpose({
 })
 
 watch(crop_area_style,async function(){
-  console.log('updated...')
   crop_window_teardown()
   await nextTick()
   crop_window_setup()
