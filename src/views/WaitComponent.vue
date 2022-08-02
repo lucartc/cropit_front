@@ -31,28 +31,6 @@
 	   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
 	   xmlns="http://www.w3.org/2000/svg"
 	   xmlns:svg="http://www.w3.org/2000/svg">
-	  <sodipodi:namedview
-	     id="namedview7"
-	     pagecolor="#d1d1d1"
-	     bordercolor="#666666"
-	     borderopacity="1.0"
-	     inkscape:showpageshadow="false"
-	     inkscape:pageopacity="0"
-	     inkscape:pagecheckerboard="0"
-	     inkscape:deskcolor="#d1d1d1"
-	     inkscape:document-units="px"
-	     showgrid="true"
-	     showborder="false"
-	     borderlayer="false"
-	     inkscape:zoom="0.73406286"
-	     inkscape:cx="86.504853"
-	     inkscape:cy="290.84703"
-	     inkscape:window-width="1920"
-	     inkscape:window-height="964"
-	     inkscape:window-x="0"
-	     inkscape:window-y="27"
-	     inkscape:window-maximized="1"
-	     inkscape:current-layer="layer1" />
 	  <defs
 	     id="defs2" />
 	  <g

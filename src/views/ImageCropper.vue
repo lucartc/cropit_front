@@ -28,6 +28,8 @@ const image_natural_height = ref(null);
 const container_element = ref(null);
 const crop_element = ref(null);
 const zooming_timeout_id = ref(null);
+const crop_area_width_ratio = ref(1);
+const crop_area_height_ratio = ref(1);
 
 const background_image_source = computed(() => {
   return props.container_background_image;
@@ -43,11 +45,11 @@ const container_style = computed(() => {
   };
 });
 
-const draggable_style = computed(() => {
+const crop_area_style = computed(() => {
   return {
-    width: props.draggable_width,
-    height: props.draggable_height,
-    aspectRatio: props.draggable_aspect_ratio,
+    width: props.crop_area_width,
+    height: props.crop_area_height,
+    aspectRatio: props.crop_area_aspect_ratio,
   };
 });
 
@@ -55,9 +57,9 @@ const props = defineProps({
   container_width: { type: String, default: "500px" },
   container_height: { type: String, default: "" },
   container_aspect_ratio: { type: [String, Number], default: "1 / 1" },
-  draggable_width: { type: String, default: "200px" },
-  draggable_height: { type: String, default: "" },
-  draggable_aspect_ratio: { type: [String, Number], default: "2 / 1" },
+  crop_area_width: { type: String, default: "200px" },
+  crop_area_height: { type: String, default: "" },
+  crop_area_aspect_ratio: { type: [String, Number], default: "2 / 1" },
   container_background_image: { type: String, default: "url('/flower.jpeg')" },
 });
 
@@ -66,6 +68,14 @@ defineExpose({
   download_images,
   show,
   hide
+})
+
+watch(crop_area_style,async function(){
+  console.log('updated...')
+  crop_window_teardown()
+  await nextTick()
+  crop_window_setup()
+  set_image_dimensions()
 })
 
 watch(background_image_source,async function(current){
@@ -188,7 +198,7 @@ onUnmounted(() => {
   >
     <div
       ref="crop_element"
-      :style="draggable_style"
+      :style="crop_area_style"
       @mousedown="set_cursor_position"
       @dragstart="start_drag"
       @dragend="finish_drag"

@@ -20,9 +20,9 @@ const image_cropper_props = reactive({
   container_width: "",
   container_height: "100%",
   container_aspect_ratio: "2",
-  draggable_width: "20%",
-  draggable_height: "",
-  draggable_aspect_ratio: "1",
+  crop_area_width: "20%",
+  crop_area_height: "",
+  crop_area_aspect_ratio: "1",
   container_background_image: ""
 });
 
@@ -93,6 +93,8 @@ function update_active_aspect_ratio() {
   if (all_aspect_ratios.length > 0) {
     set_active_aspect_ratio_item(all_aspect_ratios);
     update_crop_window_aspect_ratio();
+  }else{
+    image_cropper_props.crop_area_aspect_ratio = '1 / 1'
   }
 }
 
@@ -110,7 +112,7 @@ function set_active_aspect_ratio_item(aspect_ratio_items) {
 function update_crop_window_aspect_ratio() {
   const aspect_ratio = document.querySelector(".aspect-ratio-item-active");
   const aspect_ratio_value = aspect_ratio.innerText.split(":").join(" / ");
-  image_cropper_props.draggable_aspect_ratio = aspect_ratio_value;
+  image_cropper_props.crop_area_aspect_ratio = aspect_ratio_value;
 }
 
 function aspect_ratios_valid() {
@@ -178,10 +180,10 @@ function add_aspect_ratio() {
     json_string.value = JSON.stringify(json_obj);
   }
 
-  reset_width_and_height();
+  reset_form_width_and_height();
 }
 
-function reset_width_and_height() {
+function reset_form_width_and_height() {
   width.value = 1;
   height.value = 1;
 }
