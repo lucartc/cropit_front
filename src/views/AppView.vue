@@ -399,18 +399,18 @@ onUpdated(() => {
           @mousedown="keep_moving_carroussel_left"
           @mouseup="stop_moving_carroussel_left"
           @mouseout="stop_moving_carroussel_left"
-          id="previous"
+          id="move-left"
         >
-          <img id="previous-icon" src="/left.svg" />
+          <img id="move-left-icon" src="/left.svg" />
           <div class="tooltip">Move carroussel left</div>
         </button>
         <button
           @mousedown="keep_moving_carroussel_right"
           @mouseup="stop_moving_carroussel_right"
           @mouseout="stop_moving_carroussel_right"
-          id="next"
+          id="move-right"
         >
-          <img id="next-icon" src="/right.svg" />
+          <img id="move-right-icon" src="/right.svg" />
           <div class="tooltip">Move carroussel right</div>
         </button>
         <button @click="download_images" id="download-images" :disabled="cropped_images.length <= 0">
@@ -553,8 +553,8 @@ onUpdated(() => {
       align-items: center;
       justify-content: start;
 
-      #previous,
-      #next,
+      #move-left,
+      #move-right,
       #download-images,
       #help,
       #clear,
@@ -624,8 +624,8 @@ onUpdated(() => {
         }
       }
 
-      #previous-icon,
-      #next-icon,
+      #move-left-icon,
+      #move-right-icon,
       #download-icon,
       #help-icon,
       #clear-icon,
