@@ -9,7 +9,9 @@ function cursor_is_not_at_screen_origin(cursor_position) {
 
 function hide_ghost(event) {
   const container = document.createElement("div");
-  event.dataTransfer.setDragImage(container, 0, 0);
+  if(event.dataTransfer != undefined){
+    event.dataTransfer.setDragImage(container, 0, 0);
+  }
 }
 
 function container() {

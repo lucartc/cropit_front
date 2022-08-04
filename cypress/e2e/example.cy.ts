@@ -1,5 +1,3 @@
-// https://docs.cypress.io/api/introduction/api.html
-
 describe('Test suit',() => {
   it('Receive image and shows it at current-image div',() => {
     cy.visit('/app')
@@ -63,12 +61,114 @@ describe('Test suit',() => {
   })
 
   it('should drag crop area around',() => {
-    expect(true).to.be(false)
+    let crop_area_center = null
+
+    cy.visit('/app')
+    cy.get('#import-image-input').selectFile('cypress/fixtures/flower.jpeg',{force: true})
+    cy.get('#zoom-in-button').click()
+    cy.get('#home-button').click()
+    cy.get('#app').then(el => {
+      const container = el[0].querySelector('#crop-container')
+      const crop = el[0].querySelector('#crop-area')
+      const container_dimensions = container.getBoundingClientRect()
+      const crop_area_dimensions = crop.getBoundingClientRect()
+      crop_area_center = {
+        x: crop_area_dimensions.left + crop_area_dimensions.width/2,
+        y: crop_area_dimensions.top + crop_area_dimensions.height/2
+      }
+    })
+    cy.get('#crop-container').then(el => {
+      const container_dimensions = el[0].getBoundingClientRect()
+      cy.get('#crop-area').then(el => {
+        const crop_area_dimensions = el[0].getBoundingClientRect()
+      })
+    })
+    .then(data => {
+      cy.get('#crop-area')
+      .trigger('mousedown')
+      .trigger('dragstart')
+      .trigger('drag',{pageX: crop_area_center.x, pageY: crop_area_center.y})
+      .trigger('drag',{pageX: crop_area_center.x + 150, pageY: crop_area_center.y + 150})
+    })
+    .then(data => {
+      cy.get('#crop-container').then(el => {
+        const container_dimensions = el[0].getBoundingClientRect()
+        cy.get('#crop-area').then(el => {
+          const crop_area_dimensions = el[0].getBoundingClientRect()
+          expect(Math.round(crop_area_center.x)).to.be.lessThan(Math.round(crop_area_dimensions.left + crop_area_dimensions.width/2))
+          expect(Math.round(crop_area_center.y)).to.be.lessThan(Math.round(crop_area_dimensions.top + crop_area_dimensions.height/2))
+        })
+      })
+    })
   })
+
   it('should drag image around',() => {
-    expect(true).to.be(false)
+    let image_center = null
+
+    cy.visit('/app')
+    cy.get('#import-image-input').selectFile('cypress/fixtures/flower.jpeg',{force: true})
+    cy.get('#zoom-in-button').click()
+    cy.get('#home-button').click()
+    cy.get('#crop-container').then(el => {
+      const image_width = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).shift().trim())
+      const image_height = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).pop().trim())
+      const image_position_x = parseFloat(getComputedStyle(el[0]).backgroundPosition.split('px',2).shift().trim())
+      const image_position_y = parseFloat(getComputedStyle(el[0]).backgroundPosition.split('px',2).pop().trim())
+      image_center = {
+        x: image_position_x + image_width/2,
+        y: image_position_y + image_height/2
+      }
+    })
+    .then(data => {
+      cy.get('#crop-container')
+      .trigger('mousedown',{which: 1,pageX: image_center.x, pageY: image_center.y})
+      .trigger('drag',{pageX: image_center.x, pageY: image_center.y})
+      .trigger('drag',{pageX: image_center.x + 150, pageY: image_center.y + 150})
+    })
+    .then(data => {
+      cy.get('#crop-container').then(el => {
+        const image_width = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).shift().trim())
+        const image_height = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).pop().trim())
+        const image_position_x = parseFloat(getComputedStyle(el[0]).backgroundPosition.split('px',2).shift().trim())
+        const image_position_y = parseFloat(getComputedStyle(el[0]).backgroundPosition.split('px',2).pop().trim())
+        expect(Math.round(image_center.x)).to.be.lessThan(Math.round(image_position_x + image_width/2))
+        expect(Math.round(image_center.y)).to.be.lessThan(Math.round(image_position_y + image_height/2))
+      })
+    })
   })
   
+  it('should zoom image when mouse is scrolled',() => {
+    const width = null
+    const height = null
+    cy.visit('/app')
+    cy.get('#import-image-input').selectFile('cypress/fixtures/flower.jpeg',{force: true})
+    cy.get('#zoom-in-button').click()
+    cy.get('#crop-container').then(el => {
+      width = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).shift().trim())
+      height = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).pop().trim())
+    })
+    .then(data => cy.get('#crop-container').trigger('wheel',{deltaY: -60}))
+    .then(data => {
+      cy.get('#crop-container').then(el => {
+        const new_width = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).shift().trim())
+        const new_height = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).pop().trim())
+        expect(new_width).to.be.greaterThan(width)
+        expect(new_height).to.be.greaterThan(height)
+        width = new_width
+        height = new_height
+      })
+    })
+    .then(data => cy.get('#crop-container').trigger('wheel',{deltaY: 60}))
+    .then(data => {
+      cy.get('#crop-container').then(el => {
+        const new_width = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).shift().trim())
+        const new_height = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).pop().trim())
+        expect(new_width).to.be.lessThan(width)
+        expect(new_height).to.be.lessThan(height)
+      })
+    })
+  })
+
   it('should create crop image when crop button is clicked',() => {
     cy.visit('/app')
     cy.get('#import-image-input').selectFile('cypress/fixtures/flower.jpeg',{force: true})
@@ -87,7 +187,13 @@ describe('Test suit',() => {
   })
 
   it('should download cropped images when download button is clicked if there are cropped images availale',() => {
-    expect(false).to.be(true)
+    cy.visit('/app')
+    cy.get('#import-image-input').selectFile('cypress/fixtures/flower.jpeg',{force: true})
+    cy.get("#crop").click()
+    cy.get('#wait-modal').should('not.be.visible')
+    cy.get('#download-images').click({force: true})
+    cy.get('#wait-modal').should('be.visible')
+    cy.readFile('cypress/downloads/images.zip',{timeout: 10000}).should('exist')
   })
 
   it('should not downlod cropped images when download button is clicked if there are no available cropped images',() => {
@@ -121,7 +227,6 @@ describe('Test suit',() => {
     cy.get("#crop-container").then(el => {
       initial_background_size.width = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).shift().trim())
       initial_background_size.height = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).pop().trim())
-      console.log(getComputedStyle(el[0]).backgroundSize)
     })
 
     cy.get('#zoom-in-button').click()
@@ -145,7 +250,6 @@ describe('Test suit',() => {
     cy.get("#crop-container").then(el => {
       initial_background_size.width = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).shift().trim())
       initial_background_size.height = parseFloat(getComputedStyle(el[0]).backgroundSize.split('px',2).pop().trim())
-      console.log(getComputedStyle(el[0]).backgroundSize)
     })
 
     cy.get('#zoom-out-button').click()
