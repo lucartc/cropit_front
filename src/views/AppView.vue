@@ -1,6 +1,5 @@
 <script setup>
 import ImageCropper from "./ImageCropper.vue";
-import HelpComponent from "./HelpComponent.vue";
 import WaitComponent from "./WaitComponent.vue";
 import { ref, reactive, computed, watch, onUpdated } from "vue";
 
