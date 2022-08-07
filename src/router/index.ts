@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import AppView from "../views/AppView.vue";
+import WaitComponent from '../views/WaitComponent.vue';
+import TestComponent from '../views/TestComponent.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,7 +16,7 @@ const router = createRouter({
       path: "/app",
       name: "app",
       component: AppView,
-    },
+    }
   ],
 });
 

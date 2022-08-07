@@ -2,18 +2,17 @@
 import ImageCropper from "./ImageCropper.vue";
 import WaitComponent from "./WaitComponent.vue";
 import { ref, reactive, computed, watch, onUpdated } from "vue";
+import NavView from "@/views/NavView.vue";
 
 const current_image_index = ref(-1);
 const width = ref(1);
 const height = ref(1);
-const example_json = ref('# Example: {"ratios": [{"width": 1,"height": 1}]}');
 const image_object_src = ref(null);
-const json_string = ref("");
-const json_error_message = ref("JSON is not valid!");
 const cropped_images = ref([]);
 const carroussel_timeout_id = ref(null);
 const image_cropper = ref(null);
 const spinner = ref(null);
+const aspect_ratios = ref([]);
 
 const image_cropper_props = reactive({
   container_width: "",
@@ -22,36 +21,8 @@ const image_cropper_props = reactive({
   crop_area_width: "20%",
   crop_area_height: "",
   crop_area_aspect_ratio: "1",
-  container_background_image: ""
-});
-
-const aspect_ratios = computed(() => {
-  try {
-    return JSON.parse(json_string.value.trim()).ratios;
-  } catch (error) {
-    return null;
-  }
-});
-
-const json_error = computed(() => {
-  if (!aspect_ratios_valid() && json_string_not_empty()) {
-    return true;
-  } else if (!aspect_ratios_valid() && json_string_empty()) {
-    return false;
-  } else {
-    return !valid_json();
-  }
-});
-
-const textarea_class = computed(() => {
-  return json_invalid() ? "textarea_error" : "textarea_default";
-});
-
-watch(aspect_ratios, () => {
-  if (aspect_ratios_not_empty()) {
-    current_image_index.value = 0;
-  }
-  update_active_aspect_ratio();
+  container_background_image: "",
+  container_display: false
 });
 
 watch(current_image_index, () => {
@@ -61,22 +32,6 @@ watch(current_image_index, () => {
 watch(cropped_images.value, () => {
   render_cropped_images();
 });
-
-function json_invalid() {
-  return json_error.value;
-}
-
-function json_string_empty() {
-  return json_string.value.length == 0;
-}
-
-function json_string_not_empty() {
-  return !json_string_empty();
-}
-
-function aspect_ratios_not_empty() {
-  return aspect_ratios_valid() && aspect_ratios.value.length > 0;
-}
 
 function update_active_aspect_ratio() {
   let aspect_ratio_items = null;
@@ -114,25 +69,6 @@ function update_crop_window_aspect_ratio() {
   image_cropper_props.crop_area_aspect_ratio = aspect_ratio_value;
 }
 
-function aspect_ratios_valid() {
-  return aspect_ratios.value != null;
-}
-
-function aspect_ratios_invalid() {
-  return !aspect_ratios_valid();
-}
-
-function valid_json() {
-  if (aspect_ratios_not_empty()) {
-    const valid_items = valid_aspect_ratios();
-    return valid_items.length != aspect_ratios.value.length ? false : true;
-  }
-  return false;
-}
-
-function valid_aspect_ratios() {
-  return aspect_ratios.value.filter((item) => validate_aspect_ratio(item));
-}
 
 function validate_aspect_ratio(item) {
   return item.hasOwnProperty("width") && item.hasOwnProperty("height");
@@ -144,18 +80,6 @@ function toggle_add_aspect_ratio() {
   style.display = style.display == "" ? "flex" : "";
 }
 
-function toggle_json_textarea() {
-  const textarea = document.querySelector("#json-container");
-  const json_error_label = document.querySelector("#json-error");
-  const style = textarea.style;
-
-  style.display = style.display == "" ? "initial" : "";
-
-  if (json_error_label != null) {
-    json_error_label.style.display = style.display;
-  }
-}
-
 function import_image() {
   const image_picker = document.querySelector("#import-image-input");
   image_picker.click();
@@ -165,21 +89,18 @@ function set_image_object(event) {
   const image = Array.from(event.target.files).pop();
   image_object_src.value = URL.createObjectURL(image);
   image_cropper_props.container_background_image = image_object_src.value;
+  image_cropper_props.container_display = true
   image_cropper.value.show()
 }
 
 function add_aspect_ratio() {
-  const ratios = { width: width.value, height: height.value };
-
-  if (aspect_ratios_invalid()) {
-    json_string.value = JSON.stringify({ ratios: [ratios] });
-  } else {
-    const json_obj = JSON.parse(json_string.value);
-    json_obj.ratios.push(ratios);
-    json_string.value = JSON.stringify(json_obj);
+  const ratio = { width: width.value, height: height.value };
+  aspect_ratios.value.push(ratio)
+  if(aspect_ratios.value.length == 1){
+    current_image_index.value = 0
   }
-
   reset_form_width_and_height();
+  update_active_aspect_ratio();
 }
 
 function reset_form_width_and_height() {
@@ -189,73 +110,18 @@ function reset_form_width_and_height() {
 
 function remove_aspect_ratio(event) {
   const id = event.target.parentElement.id;
+  const json = aspect_ratios.value
+  const old_json = json.slice();
+  
+  json.splice(parseInt(id), 1);
+  
+  const new_image_index = json.indexOf(old_json[current_image_index.value]);
 
-  if (aspect_ratios_valid()) {
-    const json = JSON.parse(json_string.value).ratios;
-    const old_json = json.slice();
-    json.splice(parseInt(id), 1);
-    const new_image_index = json.indexOf(old_json[current_image_index.value]);
-
-    if (json.length > 0) {
-      json_string.value = JSON.stringify({ ratios: json });
-    } else {
-      json_string.value = "";
-    }
-
-    if (new_image_index < 0) {
-      current_image_index.value = 0;
-    } else {
-      current_image_index.value = new_image_index;
-    }
+  if (new_image_index < 0) {
+    current_image_index.value = 0;
+  } else {
+    current_image_index.value = new_image_index;
   }
-}
-
-function move_carroussel_right() {
-  const carroussel = document.querySelector("#cropped-images-carroussel");
-  const container = carroussel.parentElement;
-  const container_box = container.getBoundingClientRect();
-  const carroussel_box = carroussel.getBoundingClientRect();
-  const carroussel_style = getComputedStyle(carroussel);
-
-  if (carroussel_box.right >= container_box.right) {
-    carroussel.style.marginLeft = `${
-      parseFloat(carroussel_style.marginLeft.split("px", 1)) - 20
-    }px`;
-  }
-}
-
-function move_carroussel_left() {
-  const carroussel = document.querySelector("#cropped-images-carroussel");
-  const container = carroussel.parentElement;
-  const container_box = container.getBoundingClientRect();
-  const carroussel_style = getComputedStyle(carroussel);
-  const carroussel_box = carroussel.getBoundingClientRect();
-
-  if (carroussel_box.left <= container_box.left) {
-    carroussel.style.marginLeft = `${
-      parseFloat(carroussel_style.marginLeft.split("px", 1)) + 20
-    }px`;
-  }
-}
-
-function keep_moving_carroussel_left(event) {
-  move_carroussel_left(event);
-  const id = setTimeout(keep_moving_carroussel_left, 50);
-  carroussel_timeout_id.value = id;
-}
-
-function stop_moving_carroussel_left() {
-  clearTimeout(carroussel_timeout_id.value);
-}
-
-function keep_moving_carroussel_right(event) {
-  move_carroussel_right(event);
-  const id = setTimeout(keep_moving_carroussel_right, 50);
-  carroussel_timeout_id.value = id;
-}
-
-function stop_moving_carroussel_right() {
-  clearTimeout(carroussel_timeout_id.value);
 }
 
 function display_aspect_ratio(event) {
@@ -268,6 +134,7 @@ function display_aspect_ratio(event) {
 function clear_image() {
   image_cropper.value.hide()
   image_cropper_props.container_background_image = null;
+  image_cropper_props.container_display = false;
   image_object_src.value = null;
 }
 
@@ -284,12 +151,12 @@ function render_cropped_images() {
   remove_all_cropped_images();
   const images = cropped_images.value;
   images.forEach((image,index) => {
-    const cropped_images_container = document.querySelector(
-      "#cropped-images-carroussel"
+    const carroussel_container = document.querySelector(
+      "#carroussel-container"
     );
     const element = create_cropped_image_element(image,index);
-    add_component_data_property(element,cropped_images_container);
-    cropped_images_container.appendChild(element);
+    add_component_data_property(element,carroussel_container);
+    carroussel_container.appendChild(element);
   });
 }
 
@@ -309,13 +176,13 @@ function add_component_data_property(element,parent){
 }
 
 function remove_all_cropped_images() {
-  const cropped_images_container = document.querySelector(
-    "#cropped-images-carroussel"
+  const carroussel_container = document.querySelector(
+    "#carroussel-container"
   );
 
-  const children = Array.from(cropped_images_container.children);
+  const children = Array.from(carroussel_container.children);
   children.forEach((child) => {
-    cropped_images_container.removeChild(child);
+    carroussel_container.removeChild(child);
   });
 }
 
@@ -323,7 +190,7 @@ function create_cropped_image_element(image,index) {
   const remove_element = document.createElement("div")
   remove_element.className = "remove_cropped_image"
   const div = document.createElement("div");
-  const container_height = 40;
+  const container_height = 60;
   const container_width = container_height * (image.crop_window_width / image.crop_window_height);
   div.id = `cropped_image_${index}`
   div.className = "cropped-image"
@@ -373,110 +240,98 @@ onUpdated(() => {
 </script>
 
 <template>
-  <main id="container">
-    <WaitComponent ref="spinner"/>
-    <div id="middle" class="middle-big">
-      <div id="display">
-        <div id="image" v-if="!image_object_src">
-          <form hidden>
-            <input
-              @change="set_image_object"
-              type="file"
-              id="import-image-input"
-              name="image"
-              hidden
-            />
-          </form>
-          <button @click="import_image" id="import-image">
-            <img id="import-image-icon" src="/import.svg" /> Import image
+  <div id="wrapper">
+    <NavView/>
+    <main id="container">
+      <WaitComponent ref="spinner"/>
+      <div id="middle" class="middle-big">
+        <div id="display">
+          <div id="image" v-if="!image_object_src">
+            <form hidden>
+              <input
+                @change="set_image_object"
+                type="file"
+                id="import-image-input"
+                name="image"
+                hidden
+              />
+            </form>
+            <button @click="import_image" id="import-image">
+              <img id="import-image-icon" src="/import.svg" /> Import image
+            </button>
+          </div>
+          <ImageCropper v-bind="image_cropper_props" ref="image_cropper"/>
+        </div>
+        <div id="button-bar">
+          <button @click="download_images" id="download-images" :disabled="cropped_images.length <= 0">
+            <img id="download-icon" src="/download.svg" />
+            <div class="tooltip">Download cropped images</div>
+          </button>
+          <button v-if="image_object_src" @click="clear_image" id="clear">
+            <img id="clear-icon" src="/remove.svg" />
+            <div class="tooltip">Reset image</div>
+          </button>
+          <button @click="crop_image" v-if="image_object_src" id="crop">
+            <img id="crop-icon" src="/crop.svg" />
+            <div class="tooltip">Crop image</div>
           </button>
         </div>
-        <ImageCropper v-bind="image_cropper_props" ref="image_cropper"/>
-      </div>
-      <div id="button-bar">
-        <button
-          @mousedown="keep_moving_carroussel_left"
-          @mouseup="stop_moving_carroussel_left"
-          @mouseout="stop_moving_carroussel_left"
-          id="move-left"
-        >
-          <img id="move-left-icon" src="/left.svg" />
-          <div class="tooltip">Move carroussel left</div>
-        </button>
-        <button
-          @mousedown="keep_moving_carroussel_right"
-          @mouseup="stop_moving_carroussel_right"
-          @mouseout="stop_moving_carroussel_right"
-          id="move-right"
-        >
-          <img id="move-right-icon" src="/right.svg" />
-          <div class="tooltip">Move carroussel right</div>
-        </button>
-        <button @click="download_images" id="download-images" :disabled="cropped_images.length <= 0">
-          <img id="download-icon" src="/download.svg" />
-          <div class="tooltip">Download cropped images</div>
-        </button>
-        <button v-if="image_object_src" @click="clear_image" id="clear">
-          <img id="clear-icon" src="/remove.svg" />
-          <div class="tooltip">Reset image</div>
-        </button>
-        <button @click="crop_image" v-if="image_object_src" id="crop">
-          <img id="crop-icon" src="/crop.svg" />
-          <div class="tooltip">Crop image</div>
-        </button>
-      </div>
-      <div id="cropped-images-carroussel"></div>
-    </div>
-    <div id="right" class="right-big">
-      <button @click="toggle_add_aspect_ratio" id="add-aspect-ratio">
-        <img id="add-aspect-ratio-icon" src="/add.svg" /> Add aspect ratio
-      </button>
-      <div id="add-aspect-ratio-group">
-        <div id="width-group">
-          <label>Width:</label>
-          <input
-            v-model="width"
-            type="number"
-            min="0.01"
-            step="0.01"
-            name="width"
-          />
-        </div>
-        <div id="height-group">
-          <label>Height:</label>
-          <input
-            v-model="height"
-            type="number"
-            min="0.01"
-            step="0.01"
-            name="height"
-          />
-        </div>
-        <button @click="add_aspect_ratio" id="confirm-button">OK</button>
-      </div>
-      <div id="aspect-ratio-list" v-if="!json_error">
-        <div
-          @click="display_aspect_ratio"
-          v-for="ratio in aspect_ratios"
-          :key="aspect_ratios.indexOf(ratio)"
-          :id="aspect_ratios.indexOf(ratio)"
-          class="aspect-ratio-item"
-        >
-          {{ ratio.width }}:{{ ratio.height
-          }}<img
-            @click="remove_aspect_ratio"
-            class="aspect-ratio-item-icon"
-            src="/remove.svg"
-          />
+        <div id="cropped-images-carroussel">
+          <div id="carroussel-container"></div>
         </div>
       </div>
-    </div>
-  </main>
+      <div id="right" class="right-big">
+        <button @click="toggle_add_aspect_ratio" id="add-aspect-ratio">
+          <img id="add-aspect-ratio-icon" src="/add.svg" /> Add aspect ratio
+        </button>
+        <div id="add-aspect-ratio-group">
+          <div id="width-group">
+            <label>Width:</label>
+            <input
+              v-model="width"
+              type="number"
+              min="0.01"
+              step="0.01"
+              name="width"
+            />
+          </div>
+          <div id="height-group">
+            <label>Height:</label>
+            <input
+              v-model="height"
+              type="number"
+              min="0.01"
+              step="0.01"
+              name="height"
+            />
+          </div>
+          <button @click="add_aspect_ratio" id="confirm-button">OK</button>
+        </div>
+        <div id="aspect-ratio-list">
+          <div
+            @click="display_aspect_ratio"
+            v-for="ratio in aspect_ratios"
+            :key="aspect_ratios.indexOf(ratio)"
+            :id="aspect_ratios.indexOf(ratio)"
+            class="aspect-ratio-item"
+          >
+            {{ ratio.width }}:{{ ratio.height
+            }}<img
+              @click="remove_aspect_ratio"
+              class="aspect-ratio-item-icon"
+              src="/remove.svg"
+            />
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 </template>
 
 <style lang="scss" scoped>
 #container {
-  margin: 60px 90px 20px 90px;
+  min-width: 100%;
+  margin: 60px 0px 20px 0px;
   color: #333333;
   font-family: helvetica;
   display: flex;
@@ -486,34 +341,33 @@ onUpdated(() => {
   justify-content: center;
 
   #middle {
-    margin: 20px 20px 0px 20px;
+    margin: 20px 20px 60px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: start;
     position: relative;
-    overflow-x: hidden;
-    overflow-y: visible;
 
     #display {
-      margin: 0px 0px 20px 0px;
+      margin: 0px 0px 40px 0px;
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: start;
       width: 100%;
-      aspect-ratio: 2;
+      aspect-ratio: 2 / 1;
       max-width: 100%;
       position: relative;
 
       #image {
         border-radius: 5px;
-        background-color: #aaaaaa;
+        background-color: #dddddd;
         max-height: 100%;
         max-width: 100%;
         height: 100%;
-        aspect-ratio: 2;
+        aspect-ratio: 2 / 1;
         position: relative;
+        box-shadow: 0px 2px 4px 0px rgba(#000000,0.25);
 
         #import-image {
           white-space: nowrap;
@@ -527,9 +381,11 @@ onUpdated(() => {
           align-items: center;
           justify-content: center;
           position: absolute;
-          top: calc(50% - 25px);
-          left: calc(50% - 116px);
-          font-size: 1.2em;
+          top: calc(50% - 40px);
+          left: calc(50% - 180px);
+          width: 360px;
+          height: 80px;
+          font-size: 1.5em;
           box-shadow: 2px 2px 4px 0px rgba(#000000,0.25);
 
           &:hover{
@@ -552,8 +408,6 @@ onUpdated(() => {
       align-items: center;
       justify-content: start;
 
-      #move-left,
-      #move-right,
       #download-images,
       #help,
       #clear,
@@ -572,11 +426,6 @@ onUpdated(() => {
 
         &:hover{
           background-color: #ff3377;
-        }
-
-        &:last-child {
-          //margin: 0px 0px 0px auto;
-          //border-radius: 50%;
         }
 
         .tooltip {
@@ -623,13 +472,11 @@ onUpdated(() => {
         }
       }
 
-      #move-left-icon,
-      #move-right-icon,
       #download-icon,
       #help-icon,
       #clear-icon,
       #crop-icon {
-        height: 30px;
+        height: 40px;
         aspect-ratio: 1;
       }
     }
@@ -639,47 +486,55 @@ onUpdated(() => {
       box-sizing: border-box;
       display: flex;
       flex-direction: row;
-      max-height: 50px;
-      min-height: 50px;
       min-width: 100%;
 
-      .cropped-image{
-        border-radius: 5px;
-        background-repeat: no-repeat;
-        margin: 0px 10px 0px 0px;
-        box-shadow: 1px 1px 4px 0px #999999;
-        position: relative;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        background-color: #aaaaaa;
+      #carroussel-container{
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fill,minmax(50px,1fr));
+        gap: 20px;
+        grid-auto-rows: 50px;
 
-        .remove_cropped_image{
-          visibility: hidden;
-          width: 80%;
-          height: 80%;
-          position: absolute;
-          background-image: url('/remove.svg');
-          background-size: contain;
+        .cropped-image{
+          border-radius: 5px;
           background-repeat: no-repeat;
-          background-position: center;
-        }
-
-        &:hover{
-          filter: grayscale(50%);
+          margin: 10px 10px 0px 0px;
+          box-shadow: 1px 1px 4px 0px #999999;
+          position: relative;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          background-color: #aaaaaa;
 
           .remove_cropped_image{
-            visibility: visible;
+            visibility: hidden;
+            width: 80%;
+            height: 80%;
+            position: absolute;
+            background-image: url('/remove.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+          }
+
+          &:hover{
+            filter: grayscale(50%);
+
+            .remove_cropped_image{
+              visibility: visible;
+            }
           }
         }
       }
+
     }
   }
 
   .middle-big {
-    min-width: 40%;
-    max-width: 40%;
+    min-width: 50%;
+    max-width: 50%;
   }
 
   .middle-small {
@@ -885,11 +740,11 @@ onUpdated(() => {
   }
 
   .right-big {
-    max-width: fit-content;
+    max-width: 30%;
   }
 
   .right-small {
-    max-width: fit-content;
+    max-width: 30%;
   }
 }
 

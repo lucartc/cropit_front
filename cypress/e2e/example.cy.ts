@@ -15,51 +15,6 @@ describe('Test suit',() => {
     cy.get('#crop-area').should('have.css','aspect-ratio','3 / 4')
   })
 
-  it('Should move cropped_images to right when clicking in move right button',() => {
-    cy.visit('/app')
-    cy.get('#import-image-input').selectFile('cypress/fixtures/flower.jpeg',{force: true})
-    for(let i = 0; i < 20; i++){
-      cy.get('#crop').click()
-    }
-
-    let initial_position = null
-
-    cy.get('#cropped-images-carroussel').then((el) => {
-      const dimensions = el[0].getBoundingClientRect()
-      initial_position = dimensions.x
-    })
-    .then(async function(data){await cy.get("#move-right").click()})
-    .then(data => cy.get('#cropped-images-carroussel').then((el) => {
-      const new_dimensions = el[0].getBoundingClientRect()
-      const new_position = new_dimensions.x
-      expect(initial_position).to.be.greaterThan(new_position)
-    }))
-  })
-
-  it('Should move cropped_images to left when clicking in move left button',() => {
-    cy.visit('/app')
-    cy.get('#import-image-input').selectFile('cypress/fixtures/flower.jpeg',{force: true})
-    for(let i = 0; i < 20; i++){
-      cy.get('#crop').click()
-    }
-
-    let initial_position = null
-
-    cy.get('#cropped-images-carroussel')
-    .then(async function(data){await cy.get("#move-right").click()})
-    .then(async function(data){return await cy.get('#cropped-images-carroussel')})
-    .then(data => {
-      const dimensions = data[0].getBoundingClientRect()
-      initial_position = dimensions.x
-    })
-    .then(async function(data){await cy.get('#move-left').click()})
-    .then(data => cy.get("#cropped-images-carroussel").then(el => {
-      const new_dimensions = el[0].getBoundingClientRect()
-      const new_position = new_dimensions.x
-      expect(initial_position).to.be.lessThan(new_position)
-    }))
-  })
-
   it('should drag crop area around',() => {
     let crop_area_center = null
 
@@ -172,9 +127,9 @@ describe('Test suit',() => {
   it('should create crop image when crop button is clicked',() => {
     cy.visit('/app')
     cy.get('#import-image-input').selectFile('cypress/fixtures/flower.jpeg',{force: true})
-    cy.get('#cropped-images-carroussel').children().should('have.length',0)
+    cy.get('#carroussel-container').children().should('have.length',0)
     cy.get('#crop').click()
-    cy.get('#cropped-images-carroussel').children().should('have.length',1)
+    cy.get('#carroussel-container').children().should('have.length',1)
   })
   
   it('should show modal when download button is clicked if there are cropped images available',() => {

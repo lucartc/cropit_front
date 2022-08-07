@@ -14,14 +14,15 @@ function go_to_home() {
       <span id="logo-text">CROP.IT</span>
     </div>
     <div id="navlinks">
-      <a class="navlink" href="https://github.com/jlucartc"><img src="/github.svg" /></a>
-      <a class="navlink">Donate</a>
+      <a class="navlink" href="https://github.com/jlucartc"><img src="/github.svg" id="github-icon"/></a>
     </div>
   </nav>
 </template>
 
 <style lang="scss" scoped>
 #navbar {
+  z-index: 1;
+  min-width: 100%;
   font-family: helvetica;
   display: flex;
   flex-direction: row;
@@ -58,6 +59,11 @@ function go_to_home() {
 
       &:last-child {
         margin: 0;
+      }
+
+      #github-icon{
+        width: 40px;
+        aspect-ratio: 1;
       }
     }
   }

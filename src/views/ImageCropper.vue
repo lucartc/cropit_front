@@ -41,7 +41,7 @@ const container_style = computed(() => {
     height: props.container_height,
     aspectRatio: props.container_aspect_ratio,
     backgroundImage: "url(" + props.container_background_image + ")",
-    visibility: props.container_visibility,
+    display: props.container_display ? 'flex' : 'none'
   };
 });
 
@@ -61,6 +61,7 @@ const props = defineProps({
   crop_area_height: { type: String, default: "" },
   crop_area_aspect_ratio: { type: [String, Number], default: "2 / 1" },
   container_background_image: { type: String, default: "url('/flower.jpeg')" },
+  container_display: {type: Boolean, default: false }
 });
 
 defineExpose({
