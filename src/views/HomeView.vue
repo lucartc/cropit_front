@@ -2552,7 +2552,7 @@ function go_to_app() {
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  background-image: url('croppit_home_background_1.svg');
+  background-image: url('cropit_home_background_1.svg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -2611,6 +2611,7 @@ function go_to_app() {
   #right {
     margin: 20px 0px 0px 0px;
     min-width: 40%;
+    max-width: 40%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2846,7 +2847,7 @@ function go_to_app() {
 
 @media screen and (max-width: 960px) {
   #container {
-    margin: 0 auto 0 auto;
+    margin: 0 auto 30px auto;
     justify-content: center;
 
     #left {
@@ -2864,6 +2865,7 @@ function go_to_app() {
     }
 
     #right{
+      max-width: 100%;
       align-items: center;
     }
   }

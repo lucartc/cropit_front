@@ -42,8 +42,8 @@ describe('Test suit',() => {
       cy.get('#crop-area')
       .trigger('mousedown')
       .trigger('dragstart')
-      .trigger('drag',{pageX: crop_area_center.x, pageY: crop_area_center.y})
-      .trigger('drag',{pageX: crop_area_center.x + 150, pageY: crop_area_center.y + 150})
+      .trigger('dragover',{pageX: crop_area_center.x, pageY: crop_area_center.y})
+      .trigger('dragover',{pageX: crop_area_center.x + 150, pageY: crop_area_center.y + 150})
     })
     .then(data => {
       cy.get('#crop-container').then(el => {
@@ -77,8 +77,8 @@ describe('Test suit',() => {
     .then(data => {
       cy.get('#crop-container')
       .trigger('mousedown',{which: 1,pageX: image_center.x, pageY: image_center.y})
-      .trigger('drag',{pageX: image_center.x, pageY: image_center.y})
-      .trigger('drag',{pageX: image_center.x + 150, pageY: image_center.y + 150})
+      .trigger('dragover',{pageX: image_center.x, pageY: image_center.y})
+      .trigger('dragover',{pageX: image_center.x + 150, pageY: image_center.y + 150})
     })
     .then(data => {
       cy.get('#crop-container').then(el => {
@@ -148,7 +148,7 @@ describe('Test suit',() => {
     cy.get('#wait-modal').should('not.be.visible')
     cy.get('#download-images').click({force: true})
     cy.get('#wait-modal').should('be.visible')
-    cy.readFile('cypress/downloads/images.zip',{timeout: 10000}).should('exist')
+    cy.readFile('cypress/downloads/images.zip',{timeout: 30000}).should('exist')
   })
 
   it('should not downlod cropped images when download button is clicked if there are no available cropped images',() => {

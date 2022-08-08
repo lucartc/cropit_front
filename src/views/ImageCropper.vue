@@ -189,7 +189,7 @@ onUnmounted(() => {
   <main
     ref="container_element"
     @wheel="change_zoom"
-    @drag="image_drag"
+    @dragover="image_drag"
     @dragstart="start_image_dragging"
     @dragend="finish_image_dragging"
     :style="container_style"
@@ -202,7 +202,7 @@ onUnmounted(() => {
       @mousedown="set_cursor_position"
       @dragstart="start_drag"
       @dragend="finish_drag"
-      @drag="update_crop_position"
+      @dragover="update_crop_position"
       id="crop-area"
       draggable="true"
     ></div>

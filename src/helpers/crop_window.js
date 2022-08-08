@@ -32,7 +32,9 @@ function crop_container() {
 }
 
 function update_crop_position(event) {
+  console.log('dragging...',event.target)
   event.stopPropagation();
+  event.stopImmediatePropagation();
   if(container_is_present() && crop_area_is_present()){
     set_current_cursor_position(event);
     calculate_x_position();
