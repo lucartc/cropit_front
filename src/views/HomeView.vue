@@ -2552,7 +2552,7 @@ function go_to_app() {
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  background-image: url('cropit_home_background_1.svg');
+  background-image: url('/cropit_home_background_1.svg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
