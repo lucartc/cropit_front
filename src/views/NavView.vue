@@ -11,7 +11,7 @@ function go_to_home() {
 <template>
   <nav id="navbar">
     <div @click="go_to_home" id="logo-group">
-      <span id="logo-text">CROP.IT</span>
+      <img src="/cropit_logo.svg">
     </div>
     <div id="navlinks">
       <a class="navlink" href="https://github.com/jlucartc"><img src="/github.svg" id="github-icon"/></a>
@@ -37,13 +37,6 @@ function go_to_home() {
     flex-direction: row;
     align-items: center;
     justify-content: start;
-
-    #logo-text {
-      text-align: center;
-      font-size: 2em;
-      font-color: #000000;
-      font-weight: bold;
-    }
   }
 
   #navlinks {

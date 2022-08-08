@@ -491,10 +491,9 @@ onUpdated(() => {
       #carroussel-container{
         width: 100%;
         height: 100%;
-        display: grid;
-        grid-template-columns: repeat(auto-fill,minmax(50px,1fr));
-        gap: 20px;
-        grid-auto-rows: 50px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
 
         .cropped-image{
           border-radius: 5px;
