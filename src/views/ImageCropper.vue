@@ -1,9 +1,9 @@
 <script setup>
-import { ref, computed, onUnmounted, watch, nextTick } from "vue";
+import { ref, computed, onUnmounted, watch, nextTick } from "vue"
 
-import { convert_image_dimensions_to_pixels } from "../helpers/image_dimensions.js";
+import { convert_image_dimensions_to_pixels } from "../helpers/image_dimensions.js"
 
-import { zoom } from "../helpers/zooming.js";
+import { zoom } from "../helpers/zooming.js"
 
 import { crop, download_cropped_images } from "../helpers/cropping.js"
 
@@ -12,7 +12,7 @@ import {
   drag_image,
   finish_image_dragging,
   center_image,
-} from "../helpers/image_dragging.js";
+} from "../helpers/image_dragging.js"
 
 import {
   finish_crop_window_drag,
@@ -21,19 +21,17 @@ import {
   crop_window_setup,
   crop_window_teardown,
   update_crop_position,
-} from "../helpers/crop_window.js";
+} from "../helpers/crop_window.js"
 
-const image_natural_width = ref(null);
-const image_natural_height = ref(null);
-const container_element = ref(null);
-const crop_element = ref(null);
-const zooming_timeout_id = ref(null);
-const crop_area_width_ratio = ref(1);
-const crop_area_height_ratio = ref(1);
+const image_natural_width = ref(null)
+const image_natural_height = ref(null)
+const container_element = ref(null)
+const crop_element = ref(null)
+const zooming_timeout_id = ref(null)
 
 const background_image_source = computed(() => {
-  return props.container_background_image;
-});
+  return props.container_background_image
+})
 
 const container_style = computed(() => {
   return {
@@ -42,16 +40,16 @@ const container_style = computed(() => {
     aspectRatio: props.container_aspect_ratio,
     backgroundImage: "url(" + props.container_background_image + ")",
     display: props.container_display ? 'flex' : 'none'
-  };
-});
+  }
+})
 
 const crop_area_style = computed(() => {
   return {
     width: props.crop_area_width,
     height: props.crop_area_height,
     aspectRatio: props.crop_area_aspect_ratio,
-  };
-});
+  }
+})
 
 const props = defineProps({
   container_width: { type: String, default: "500px" },
@@ -62,7 +60,7 @@ const props = defineProps({
   crop_area_aspect_ratio: { type: [String, Number], default: "2 / 1" },
   container_background_image: { type: String, default: "url('/flower.jpeg')" },
   container_display: {type: Boolean, default: false }
-});
+})
 
 defineExpose({
   crop_image,
@@ -83,16 +81,16 @@ watch(background_image_source,async function(current){
     clear_container_background()
     crop_window_teardown()
   }else{
-    crop_window_setup();
-    set_image_dimensions();
+    crop_window_setup()
+    set_image_dimensions()
   }
 })
 
 watch([crop_element, container_element], (current) => {
   if (current.shift() != null && current.shift() != null) {
-    crop_window_setup();
+    crop_window_setup()
   }
-});
+})
 
 function show(){
   const style = container_element.value.style
@@ -120,69 +118,69 @@ function download_images(images){
 
 async function set_image_dimensions() {
   await nextTick()
-  const image = new Image();
-  image.src = background_image_source.value;
-  const natural_width = image.naturalWidth;
-  const natural_height = image.naturalHeight;
-  image_natural_width.value = natural_width;
-  image_natural_height.value = natural_height;
-  convert_image_dimensions_to_pixels();
+  const image = new Image()
+  image.src = background_image_source.value
+  const natural_width = image.naturalWidth
+  const natural_height = image.naturalHeight
+  image_natural_width.value = natural_width
+  image_natural_height.value = natural_height
+  convert_image_dimensions_to_pixels()
 }
 
 function change_zoom(event) {
   const cursor_position = {
     x: event.pageX,
     y: event.pageY,
-  };
-  if (event.deltaY > 0) {
-    zoom(cursor_position, "out");
-  } else {
-    zoom(cursor_position, "in");
   }
-  event.preventDefault();
+  if (event.deltaY > 0) {
+    zoom(cursor_position, "out")
+  } else {
+    zoom(cursor_position, "in")
+  }
+  event.preventDefault()
 }
 
 function zooming_in() {
-  const crop_box = crop_element.value.getBoundingClientRect();
+  const crop_box = crop_element.value.getBoundingClientRect()
   const cursor_position = {
     x: crop_box.left + crop_box.width / 2,
     y: crop_box.top + crop_box.height / 2,
-  };
-  zoom(cursor_position, "in");
+  }
+  zoom(cursor_position, "in")
 }
 
 function zooming_out() {
-  const crop_box = crop_element.value.getBoundingClientRect();
+  const crop_box = crop_element.value.getBoundingClientRect()
   const cursor_position = {
     x: crop_box.left + crop_box.width / 2,
     y: crop_box.top + crop_box.height / 2,
-  };
-  zoom(cursor_position, "out");
+  }
+  zoom(cursor_position, "out")
 }
 
 function keep_zooming_in() {
-  zooming_in();
-  const id = setTimeout(keep_zooming_in, 50);
-  zooming_timeout_id.value = id;
+  zooming_in()
+  const id = setTimeout(keep_zooming_in, 50)
+  zooming_timeout_id.value = id
 }
 
 function stop_zooming_in() {
-  clearTimeout(zooming_timeout_id.value);
+  clearTimeout(zooming_timeout_id.value)
 }
 
 function keep_zooming_out() {
-  zooming_out();
-  const id = setTimeout(keep_zooming_out, 50);
-  zooming_timeout_id.value = id;
+  zooming_out()
+  const id = setTimeout(keep_zooming_out, 50)
+  zooming_timeout_id.value = id
 }
 
 function stop_zooming_out() {
-  clearTimeout(zooming_timeout_id.value);
+  clearTimeout(zooming_timeout_id.value)
 }
 
 onUnmounted(() => {
   crop_window_teardown()
-});
+})
 </script>
 
 <template>
