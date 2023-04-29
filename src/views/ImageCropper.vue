@@ -9,14 +9,14 @@ import { crop, download_cropped_images } from "../helpers/cropping.js"
 
 import {
   start_image_dragging,
-  image_drag,
+  drag_image,
   finish_image_dragging,
   center_image,
 } from "../helpers/image_dragging.js";
 
 import {
-  finish_drag,
-  start_drag,
+  finish_crop_window_drag,
+  start_crop_window_drag,
   set_cursor_position,
   crop_window_setup,
   crop_window_teardown,
@@ -181,7 +181,7 @@ function stop_zooming_out() {
 }
 
 onUnmounted(() => {
-  crop_window_teardown();
+  crop_window_teardown()
 });
 </script>
 
@@ -189,9 +189,12 @@ onUnmounted(() => {
   <main
     ref="container_element"
     @wheel="change_zoom"
-    @dragover="image_drag"
+    @dragover="drag_image"
     @dragstart="start_image_dragging"
     @dragend="finish_image_dragging"
+    @touchstart="start_image_dragging"
+    @touchmove="drag_image"
+    @touchend="finish_image_dragging"
     :style="container_style"
     id="crop-container"
     draggable="true"
@@ -199,10 +202,13 @@ onUnmounted(() => {
     <div
       ref="crop_element"
       :style="crop_area_style"
-      @mousedown="set_cursor_position"
-      @dragstart="start_drag"
-      @dragend="finish_drag"
+      @pointerdown="set_cursor_position"
+      @dragstart="start_crop_window_drag"
+      @dragend="finish_crop_window_drag"
       @dragover="update_crop_position"
+      @touchstart="start_crop_window_drag"
+      @touchmove="update_crop_position"
+      @touchend="finish_crop_window_drag"
       id="crop-area"
       draggable="true"
     ></div>
@@ -212,18 +218,18 @@ onUnmounted(() => {
     <div id="opacity-right"></div>
     <div id="crop-controls">
       <button
-        @mousedown="keep_zooming_in"
-        @mouseup="stop_zooming_in"
-        @mouseout="stop_zooming_in"
+        @pointerdown="keep_zooming_in"
+        @pointerup="stop_zooming_in"
+        @pointerout="stop_zooming_in"
         id="zoom-in-button"
       >
         <img id="zoom-in" src="/zoom_plus.svg" />
         <div class="tooltip">Zoom in</div>
       </button>
       <button
-        @mousedown="keep_zooming_out"
-        @mouseup="stop_zooming_out"
-        @mouseout="stop_zooming_out"
+        @pointerdown="keep_zooming_out"
+        @pointerup="stop_zooming_out"
+        @pointerout="stop_zooming_out"
         id="zoom-out-button"
       >
         <img id="zoom-out" src="/zoom_minus.svg" />

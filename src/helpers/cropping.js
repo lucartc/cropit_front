@@ -2,23 +2,23 @@ import {
   container,
   crop_area,
   is_image_ready
-} from "./general.js";
+} from "./general.js"
 
 function crop_container() {
-  return container();
+  return container()
 }
 
 function crop() {
   if (
     is_image_ready()
   ) {
-    const container_box = crop_container().getBoundingClientRect();
-    const crop_box = crop_area().getBoundingClientRect();
+    const container_box = crop_container().getBoundingClientRect()
+    const crop_box = crop_area().getBoundingClientRect()
     const image_position = getComputedStyle(
       crop_container()
-    ).backgroundPosition;
-    const image_size = getComputedStyle(crop_container()).backgroundSize;
-    const image_source = getComputedStyle(crop_container()).backgroundImage;
+    ).backgroundPosition
+    const image_size = getComputedStyle(crop_container()).backgroundSize
+    const image_source = getComputedStyle(crop_container()).backgroundImage
 
     const new_image_position = {
       x:
@@ -27,7 +27,7 @@ function crop() {
       y:
         parseFloat(image_position.split("px", 2).pop().trim()) -
         (crop_box.top - container_box.top),
-    };
+    }
 
     return {
       width: parseFloat(image_size.split("px", 2).shift().trim()),
@@ -37,7 +37,7 @@ function crop() {
       crop_window_width: crop_box.width,
       crop_window_height: crop_box.height,
       source: image_source.replace('url("', "").replace('")', ""),
-    };
+    }
   }
 }
 
@@ -63,8 +63,8 @@ async function download_cropped_images(cropped_images){
                       return file
                    })
                    .then(file => {
-                      const response = {};
-                      response[source] = file.result.replace(/data:.+;base64,/,'');
+                      const response = {}
+                      response[source] = file.result.replace(/data:.+;base64,/,'')
                       return response
                     })
     ))
@@ -99,4 +99,4 @@ async function download_cropped_images(cropped_images){
   return result
 }
 
-export { crop, download_cropped_images };
+export { crop, download_cropped_images }

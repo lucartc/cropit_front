@@ -1,11 +1,11 @@
 <script setup>
-import { useRouter } from "vue-router";
-import NavView from "@/views/NavView.vue";
+import { useRouter } from "vue-router"
+import NavView from "@/views/NavView.vue"
 
-const router = useRouter();
+const router = useRouter()
 
 function go_to_app() {
-  router.push({ name: "app" });
+  router.push({ name: "app" })
 }
 </script>
 

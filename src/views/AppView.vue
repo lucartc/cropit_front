@@ -1,18 +1,18 @@
 <script setup>
-import ImageCropper from "./ImageCropper.vue";
-import WaitComponent from "./WaitComponent.vue";
-import { ref, reactive, computed, watch, onUpdated } from "vue";
-import NavView from "@/views/NavView.vue";
+import ImageCropper from "./ImageCropper.vue"
+import WaitComponent from "./WaitComponent.vue"
+import { ref, reactive, computed, watch, onUpdated } from "vue"
+import NavView from "@/views/NavView.vue"
 
-const current_image_index = ref(-1);
-const width = ref(1);
-const height = ref(1);
-const image_object_src = ref(null);
-const cropped_images = ref([]);
-const carroussel_timeout_id = ref(null);
-const image_cropper = ref(null);
-const spinner = ref(null);
-const aspect_ratios = ref([]);
+const current_image_index = ref(-1)
+const width = ref(1)
+const height = ref(1)
+const image_object_src = ref(null)
+const cropped_images = ref([])
+const carroussel_timeout_id = ref(null)
+const image_cropper = ref(null)
+const spinner = ref(null)
+const aspect_ratios = ref([])
 
 const image_cropper_props = reactive({
   container_width: "",
@@ -23,30 +23,30 @@ const image_cropper_props = reactive({
   crop_area_aspect_ratio: "1",
   container_background_image: "",
   container_display: false
-});
+})
 
 watch(current_image_index, () => {
-  update_active_aspect_ratio();
-});
+  update_active_aspect_ratio()
+})
 
 watch(cropped_images.value, () => {
-  render_cropped_images();
-});
+  render_cropped_images()
+})
 
 function update_active_aspect_ratio() {
-  let aspect_ratio_items = null;
-  let active_aspect_ratio = null;
-  let all_aspect_ratios = null;
+  let aspect_ratio_items = null
+  let active_aspect_ratio = null
+  let all_aspect_ratios = null
 
-  aspect_ratio_items = document.querySelectorAll(".aspect-ratio-item");
-  active_aspect_ratio = document.querySelectorAll(".aspect-ratio-item-active");
-  aspect_ratio_items = Array.from(aspect_ratio_items);
-  active_aspect_ratio = Array.from(active_aspect_ratio);
-  all_aspect_ratios = [...aspect_ratio_items, ...active_aspect_ratio];
+  aspect_ratio_items = document.querySelectorAll(".aspect-ratio-item")
+  active_aspect_ratio = document.querySelectorAll(".aspect-ratio-item-active")
+  aspect_ratio_items = Array.from(aspect_ratio_items)
+  active_aspect_ratio = Array.from(active_aspect_ratio)
+  all_aspect_ratios = [...aspect_ratio_items, ...active_aspect_ratio]
 
   if (all_aspect_ratios.length > 0) {
-    set_active_aspect_ratio_item(all_aspect_ratios);
-    update_crop_window_aspect_ratio();
+    set_active_aspect_ratio_item(all_aspect_ratios)
+    update_crop_window_aspect_ratio()
   }else{
     image_cropper_props.crop_area_aspect_ratio = '1 / 1'
   }
@@ -54,110 +54,110 @@ function update_active_aspect_ratio() {
 
 function set_active_aspect_ratio_item(aspect_ratio_items) {
   aspect_ratio_items.forEach((item) => {
-    const item_id = parseInt(item.id);
-    const current_image_id = current_image_index.value;
-    const is_active = item_id == current_image_id;
-    const active_class = "aspect-ratio-item-active";
-    const not_active_class = "aspect-ratio-item";
-    item.className = is_active ? active_class : not_active_class;
-  });
+    const item_id = parseInt(item.id)
+    const current_image_id = current_image_index.value
+    const is_active = item_id == current_image_id
+    const active_class = "aspect-ratio-item-active"
+    const not_active_class = "aspect-ratio-item"
+    item.className = is_active ? active_class : not_active_class
+  })
 }
 
 function update_crop_window_aspect_ratio() {
-  const aspect_ratio = document.querySelector(".aspect-ratio-item-active");
-  const aspect_ratio_value = aspect_ratio.innerText.split(":").join(" / ");
-  image_cropper_props.crop_area_aspect_ratio = aspect_ratio_value;
+  const aspect_ratio = document.querySelector(".aspect-ratio-item-active")
+  const aspect_ratio_value = aspect_ratio.innerText.split(":").join(" / ")
+  image_cropper_props.crop_area_aspect_ratio = aspect_ratio_value
 }
 
 
 function validate_aspect_ratio(item) {
-  return item.hasOwnProperty("width") && item.hasOwnProperty("height");
+  return item.hasOwnProperty("width") && item.hasOwnProperty("height")
 }
 
 function toggle_add_aspect_ratio() {
-  const form = document.querySelector("#add-aspect-ratio-group");
-  const style = form.style;
-  style.display = style.display == "" ? "flex" : "";
+  const form = document.querySelector("#add-aspect-ratio-group")
+  const style = form.style
+  style.display = style.display == "" ? "flex" : ""
 }
 
 function import_image() {
-  const image_picker = document.querySelector("#import-image-input");
-  image_picker.click();
+  const image_picker = document.querySelector("#import-image-input")
+  image_picker.click()
 }
 
 function set_image_object(event) {
-  const image = Array.from(event.target.files).pop();
-  image_object_src.value = URL.createObjectURL(image);
-  image_cropper_props.container_background_image = image_object_src.value;
+  const image = Array.from(event.target.files).pop()
+  image_object_src.value = URL.createObjectURL(image)
+  image_cropper_props.container_background_image = image_object_src.value
   image_cropper_props.container_display = true
   image_cropper.value.show()
 }
 
 function add_aspect_ratio() {
-  const ratio = { width: width.value, height: height.value };
+  const ratio = { width: width.value, height: height.value }
   aspect_ratios.value.push(ratio)
   if(aspect_ratios.value.length == 1){
     current_image_index.value = 0
   }
-  reset_form_width_and_height();
-  update_active_aspect_ratio();
+  reset_form_width_and_height()
+  update_active_aspect_ratio()
 }
 
 function reset_form_width_and_height() {
-  width.value = 1;
-  height.value = 1;
+  width.value = 1
+  height.value = 1
 }
 
 function remove_aspect_ratio(event) {
-  const id = event.target.parentElement.id;
+  const id = event.target.parentElement.id
   const json = aspect_ratios.value
-  const old_json = json.slice();
+  const old_json = json.slice()
   
-  json.splice(parseInt(id), 1);
+  json.splice(parseInt(id), 1)
   
-  const new_image_index = json.indexOf(old_json[current_image_index.value]);
+  const new_image_index = json.indexOf(old_json[current_image_index.value])
 
   if (new_image_index < 0) {
-    current_image_index.value = 0;
+    current_image_index.value = 0
   } else {
-    current_image_index.value = new_image_index;
+    current_image_index.value = new_image_index
   }
 }
 
 function display_aspect_ratio(event) {
   if (event.target.tagName != "IMG") {
-    const aspect_ratio_index = event.target.id;
-    current_image_index.value = parseInt(aspect_ratio_index);
+    const aspect_ratio_index = event.target.id
+    current_image_index.value = parseInt(aspect_ratio_index)
   }
 }
 
 function clear_image() {
   image_cropper.value.hide()
-  image_cropper_props.container_background_image = null;
-  image_cropper_props.container_display = false;
-  image_object_src.value = null;
+  image_cropper_props.container_background_image = null
+  image_cropper_props.container_display = false
+  image_object_src.value = null
 }
 
 function crop_image() {
   const new_crop = image_cropper.value.crop_image()
-  store_cropped_image(new_crop);
+  store_cropped_image(new_crop)
 }
 
 function store_cropped_image(image) {
-  cropped_images.value.push(image);
+  cropped_images.value.push(image)
 }
 
 function render_cropped_images() {
-  remove_all_cropped_images();
-  const images = cropped_images.value;
+  remove_all_cropped_images()
+  const images = cropped_images.value
   images.forEach((image,index) => {
     const carroussel_container = document.querySelector(
       "#carroussel-container"
-    );
-    const element = create_cropped_image_element(image,index);
-    add_component_data_property(element,carroussel_container);
-    carroussel_container.appendChild(element);
-  });
+    )
+    const element = create_cropped_image_element(image,index)
+    add_component_data_property(element,carroussel_container)
+    carroussel_container.appendChild(element)
+  })
 }
 
 function add_component_data_property(element,parent){
@@ -178,34 +178,34 @@ function add_component_data_property(element,parent){
 function remove_all_cropped_images() {
   const carroussel_container = document.querySelector(
     "#carroussel-container"
-  );
+  )
 
-  const children = Array.from(carroussel_container.children);
+  const children = Array.from(carroussel_container.children)
   children.forEach((child) => {
-    carroussel_container.removeChild(child);
-  });
+    carroussel_container.removeChild(child)
+  })
 }
 
 function create_cropped_image_element(image,index) {
   const remove_element = document.createElement("div")
   remove_element.className = "remove_cropped_image"
-  const div = document.createElement("div");
-  const container_height = 60;
-  const container_width = container_height * (image.crop_window_width / image.crop_window_height);
+  const div = document.createElement("div")
+  const container_height = 60
+  const container_width = container_height * (image.crop_window_width / image.crop_window_height)
   div.id = `cropped_image_${index}`
   div.className = "cropped-image"
   div.style.height = `${container_height}px`
   div.style.width = `${container_width}px`
-  div.style.backgroundImage = `url("${image.source}")`;
+  div.style.backgroundImage = `url("${image.source}")`
   div.style.backgroundSize = `${
      image.width * (container_width / image.crop_window_width)
-  }px ${image.height * (container_height / image.crop_window_height)}px`;
+  }px ${image.height * (container_height / image.crop_window_height)}px`
   div.style.backgroundPosition = `${
      image.left * (container_width / image.crop_window_width)
-  }px ${image.top * (container_height / image.crop_window_height)}px`;
+  }px ${image.top * (container_height / image.crop_window_height)}px`
   div.addEventListener('click',remove_cropped_image)
   div.appendChild(remove_element)
-  return div;
+  return div
 }
 
 function remove_cropped_image(event){
@@ -235,8 +235,8 @@ function stop_spinner(){
 }
 
 onUpdated(() => {
-  update_active_aspect_ratio();
-});
+  update_active_aspect_ratio()
+})
 </script>
 
 <template>
