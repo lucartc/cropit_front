@@ -52,25 +52,24 @@ function resize_dimensions(cursor_absolute_position, in_out) {
     ),
   }
 
-  const dimensions = {
+  const image_dimensions = {
     image_width: image_current_size.x,
     image_height: image_current_size.y,
     top: image_current_position.y,
     left: image_current_position.x
   }
 
-
-  dimensions.image_width *= scaling_factor(in_out)
-  dimensions.image_height *= scaling_factor(in_out)
+  image_dimensions.image_width *= scaling_factor(in_out)
+  image_dimensions.image_height *= scaling_factor(in_out)
 
   const image_center = {
-    x: dimensions.left + dimensions.image_width / 2,
-    y: dimensions.top + dimensions.image_height / 2,
+    x: image_dimensions.left + image_dimensions.image_width / 2,
+    y: image_dimensions.top + image_dimensions.image_height / 2,
   }
 
   const cursor_relative_position = {
-    x: cursor_absolute_position.x - container_box.left,
-    y: cursor_absolute_position.y - container_box.top,
+    x: cursor_absolute_position.x - (container_box.left + window.scrollX),
+    y: cursor_absolute_position.y - (container_box.top + window.scrollY),
   }
 
   const new_image_to_cursor_distance = {
@@ -80,49 +79,49 @@ function resize_dimensions(cursor_absolute_position, in_out) {
 
   const bottom =
     Math.abs(new_image_to_cursor_distance.y) -
-    Math.abs(dimensions.image_height / 2) +
-    Math.abs(container_box.bottom - cursor_absolute_position.y)
+    Math.abs(image_dimensions.image_height / 2) +
+    Math.abs(container_box.bottom - cursor_absolute_position.y + window.scrollY)
   
   const right =
     Math.abs(new_image_to_cursor_distance.x) -
-    Math.abs(dimensions.image_width / 2) +
-    Math.abs(container_box.right - cursor_absolute_position.x)
+    Math.abs(image_dimensions.image_width / 2) +
+    Math.abs(container_box.right - cursor_absolute_position.x + window.scrollX)
 
   if (image_is_above_left(new_image_to_cursor_distance)) {
-    dimensions.top = Math.abs(container_box.height) - 
+    image_dimensions.top = Math.abs(container_box.height) - 
                      bottom - 
-                     Math.abs(dimensions.image_height)
+                     Math.abs(image_dimensions.image_height)
     
-    dimensions.left = Math.abs(container_box.width) -
+    image_dimensions.left = Math.abs(container_box.width) -
                       right -
-                      Math.abs(dimensions.image_width)
+                      Math.abs(image_dimensions.image_width)
   } else if (image_is_above_right(new_image_to_cursor_distance)) {
-    dimensions.top = Math.abs(container_box.height) -
+    image_dimensions.top = Math.abs(container_box.height) -
                      bottom -
-                     Math.abs(dimensions.image_height)
+                     Math.abs(image_dimensions.image_height)
     
-    dimensions.left = Math.abs(new_image_to_cursor_distance.x) -
-                      Math.abs(dimensions.image_width / 2) +
+    image_dimensions.left = Math.abs(new_image_to_cursor_distance.x) -
+                      Math.abs(image_dimensions.image_width / 2) +
                       Math.abs(cursor_relative_position.x)
   } else if (image_is_below_left(new_image_to_cursor_distance)) {
-    dimensions.top = Math.abs(new_image_to_cursor_distance.y) -
-                     Math.abs(dimensions.image_height / 2) +
+    image_dimensions.top = Math.abs(new_image_to_cursor_distance.y) -
+                     Math.abs(image_dimensions.image_height / 2) +
                      Math.abs(cursor_relative_position.y)
     
-    dimensions.left = Math.abs(container_box.width) -
+    image_dimensions.left = Math.abs(container_box.width) -
                       right -
-                      Math.abs(dimensions.image_width)
+                      Math.abs(image_dimensions.image_width)
   } else if (image_is_below_right(new_image_to_cursor_distance)) {
-    dimensions.top = Math.abs(new_image_to_cursor_distance.y) -
-                     Math.abs(dimensions.image_height / 2) +
+    image_dimensions.top = Math.abs(new_image_to_cursor_distance.y) -
+                     Math.abs(image_dimensions.image_height / 2) +
                      Math.abs(cursor_relative_position.y)
                      
-    dimensions.left = Math.abs(new_image_to_cursor_distance.x) -
-                      Math.abs(dimensions.image_width / 2) +
+    image_dimensions.left = Math.abs(new_image_to_cursor_distance.x) -
+                      Math.abs(image_dimensions.image_width / 2) +
                       Math.abs(cursor_relative_position.x)
   }
 
-  return dimensions
+  return image_dimensions
 }
 
 function scaling_factor(in_out) {
