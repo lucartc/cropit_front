@@ -112,7 +112,6 @@
 <style lang="scss" scoped>
 	#wait-modal{
 		display: none;
-		//visibility: hidden;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;

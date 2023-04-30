@@ -44,21 +44,45 @@ const container_style = computed(() => {
 })
 
 const crop_area_style = computed(() => {
-  return {
-    width: props.crop_area_width,
-    height: props.crop_area_height,
-    aspectRatio: props.crop_area_aspect_ratio,
+  if(crop_element.value != null && container_element.value != null){
+    let container_width = container_element.value.getBoundingClientRect().width
+    let container_height = container_element.value.getBoundingClientRect().height
+    let minimum_side = container_width * 0.2
+    let ratio = props.crop_area_aspect_ratio.replace(' ','').split('/')
+    let ratio_width = parseFloat(ratio[0])
+    let ratio_height = ratio.length == 1 ? parseFloat(ratio[0]) : parseFloat(ratio[1])
+    let new_crop_window_width = crop_element.value.getBoundingClientRect().width
+    let new_crop_window_height = new_crop_window_width * ratio_height/ratio_width
+
+    if(ratio_height == ratio_width){
+      new_crop_window_height = ''
+      new_crop_window_width = '20%'
+    }else{
+      new_crop_window_height = ratio_height > ratio_width ?  (minimum_side/container_height*100)+'%' : ''
+      new_crop_window_width = ratio_height > ratio_width ? '' : '20%'
+    }
+
+    return {
+      width: new_crop_window_width,
+      height: new_crop_window_height,
+      aspectRatio: props.crop_area_aspect_ratio,
+    }
+  }else{
+    return {
+      width: '20%',
+      height: '',
+      aspectRatio: props.crop_area_aspect_ratio,
+    }
   }
+
 })
 
 const props = defineProps({
   container_width: { type: String, default: "500px" },
   container_height: { type: String, default: "" },
   container_aspect_ratio: { type: [String, Number], default: "1 / 1" },
-  crop_area_width: { type: String, default: "200px" },
-  crop_area_height: { type: String, default: "" },
   crop_area_aspect_ratio: { type: [String, Number], default: "2 / 1" },
-  container_background_image: { type: String, default: "url('/flower.jpeg')" },
+  container_background_image: { type: String },
   container_display: {type: Boolean, default: false }
 })
 

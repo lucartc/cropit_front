@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router"
-import NavView from "@/views/NavView.vue"
+import NavComponent from "../components/NavComponent.vue"
 
 const router = useRouter()
 
@@ -11,7 +11,7 @@ function go_to_app() {
 
 <template>
   <div id="wrapper">
-   <NavView/>
+   <NavComponent/>
   <main id="container">
     <div id="left">
       <header id="header">Keep only what matters.</header>

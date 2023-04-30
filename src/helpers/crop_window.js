@@ -34,7 +34,7 @@ function crop_container() {
 function update_crop_position(event) {
   event.stopPropagation()
   event.stopImmediatePropagation()
-  if(container_is_present() && crop_area_is_present()){
+  if(container_is_present() && crop_area_is_present() && (drag_started.value || drag_finished.value)){
     set_current_cursor_position(event)
     calculate_x_position()
     calculate_y_position()
@@ -256,7 +256,7 @@ function finish_crop_window_drag(event) {
   event.stopPropagation()
   drag_finished.value = true
   update_crop_position(event)
-  reset_positions()
+  reset_flags()
 }
 
 function set_current_resizing_position() {
@@ -273,9 +273,11 @@ function set_current_resizing_position() {
   }
 }
 
-function reset_positions() {
+function reset_flags() {
   last_cursor_position.value = null
   current_cursor_position.value = null
+  drag_finished.value = false
+  drag_started.value = false
 }
 
 function set_cursor_position(event) {

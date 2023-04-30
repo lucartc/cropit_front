@@ -1,15 +1,14 @@
 <script setup>
-import ImageCropper from "./ImageCropper.vue"
-import WaitComponent from "./WaitComponent.vue"
-import { ref, reactive, computed, watch, onUpdated } from "vue"
-import NavView from "@/views/NavView.vue"
+import ImageCropperComponent from "../components/ImageCropperComponent.vue"
+import WaitComponent from "../components/WaitComponent.vue"
+import { ref, reactive, watch, onUpdated } from "vue"
+import NavComponent from "../components/NavComponent.vue"
 
 const current_image_index = ref(-1)
 const width = ref(1)
 const height = ref(1)
 const image_object_src = ref(null)
 const cropped_images = ref([])
-const carroussel_timeout_id = ref(null)
 const image_cropper = ref(null)
 const spinner = ref(null)
 const aspect_ratios = ref([])
@@ -18,8 +17,6 @@ const image_cropper_props = reactive({
   container_width: "",
   container_height: "100%",
   container_aspect_ratio: "2",
-  crop_area_width: "20%",
-  crop_area_height: "",
   crop_area_aspect_ratio: "1",
   container_background_image: "",
   container_display: false
@@ -241,7 +238,7 @@ onUpdated(() => {
 
 <template>
   <div id="wrapper">
-    <NavView/>
+    <NavComponent/>
     <main id="container">
       <WaitComponent ref="spinner"/>
       <div id="middle" class="middle-big">
@@ -260,7 +257,7 @@ onUpdated(() => {
               <img id="import-image-icon" src="/import.svg" /> Import image
             </button>
           </div>
-          <ImageCropper v-bind="image_cropper_props" ref="image_cropper"/>
+          <ImageCropperComponent v-bind="image_cropper_props" ref="image_cropper"/>
         </div>
         <div id="button-bar">
           <button @click="download_images" id="download-images" :disabled="cropped_images.length <= 0">
