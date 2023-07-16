@@ -26,7 +26,7 @@ function drag_image(event) {
     cursor_position.y = event.pageY
   }
 
-  if (initial_position.value != null) {
+  if (initial_position.value) {
     move_image(cursor_position)
   } else {
     const container_box = image_container().getBoundingClientRect()

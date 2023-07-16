@@ -44,7 +44,7 @@ const container_style = computed(() => {
 })
 
 const crop_area_style = computed(() => {
-  if(crop_element.value != null && container_element.value != null){
+  if(crop_element.value && container_element.value){
     let container_width = container_element.value.getBoundingClientRect().width
     let container_height = container_element.value.getBoundingClientRect().height
     let minimum_side = container_width * 0.2
@@ -101,7 +101,7 @@ watch(crop_area_style,async function(){
 })
 
 watch(background_image_source,async function(current){
-  if(current == null){
+  if(!current){
     clear_container_background()
     crop_window_teardown()
   }else{
@@ -111,7 +111,7 @@ watch(background_image_source,async function(current){
 })
 
 watch([crop_element, container_element], (current) => {
-  if (current.shift() != null && current.shift() != null) {
+  if (current.shift() && current.shift()) {
     crop_window_setup()
   }
 })

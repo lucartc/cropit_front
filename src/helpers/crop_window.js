@@ -200,12 +200,11 @@ function drag_is_happening() {
 }
 
 function calculate_opacity_position() {
-  if(container_is_present() && crop_area_is_present()){
-    calculate_opacity_top_position()
-    calculate_opacity_right_position()
-    calculate_opacity_bottom_position()
-    calculate_opacity_left_position()
-  }
+  if(!container_is_present() || !crop_area_is_present()) return
+  calculate_opacity_top_position()
+  calculate_opacity_right_position()
+  calculate_opacity_bottom_position()
+  calculate_opacity_left_position()
 }
 
 function calculate_opacity_top_position() {
