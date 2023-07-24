@@ -152,24 +152,8 @@ function render_cropped_images() {
       "#carroussel-container"
     )
     const element = create_cropped_image_element(image,index)
-    add_component_data_property(element,carroussel_container)
     carroussel_container.appendChild(element)
   })
-}
-
-function add_component_data_property(element,parent){
-  let properties = Array.from(parent.attributes)
-  properties = properties.map(item => item.name)
-  
-  const data_property = properties
-                        .filter(item => item.match(/^data-.+$/))
-                        .pop()
-                        .split('data-')
-                        .pop()
-
-  const children = Array.from(element.children)
-  children.forEach(child => child.dataset[data_property] = '')
-  element.dataset[data_property] = ''
 }
 
 function remove_all_cropped_images() {
@@ -215,12 +199,7 @@ function remove_cropped_image(event){
 async function download_images(){
   start_spinner()
   image_cropper.value.download_images(cropped_images.value)
-  .then(data => {
-    setTimeout(stop_spinner,2000)
-  })
-  .catch(data => {
-    setTimeout(stop_spinner,2000)
-  })
+  .finally(data => setTimeout(stop_spinner,2000))
 }
 
 function start_spinner(){
@@ -325,7 +304,7 @@ onUpdated(() => {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 #container {
   min-width: 100%;
   margin: 60px 0px 20px 0px;
